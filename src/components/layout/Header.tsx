@@ -1,12 +1,14 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X, Plane } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import najmaLogo from "@/assets/najma.png";
 
 const links = [
   { to: "/", label: "Home" },
   { to: "/study-abroad", label: "Study Abroad" },
+  { to: "/medical-tourism", label: "Medical Tourism" },
   { to: "/hajj", label: "Hajj 2026" },
   { to: "/umrah", label: "Umrah 2026" },
   { to: "/contact", label: "Contact" },
@@ -37,9 +39,11 @@ export default function Header() {
     >
       <div className="container-luxe flex items-center justify-between h-20">
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-sm bg-gradient-gold flex items-center justify-center shadow-gold transition-transform group-hover:rotate-12">
-            <Plane className="w-5 h-5 text-gold-foreground" />
-          </div>
+          <img
+            src={najmaLogo}
+            alt="Najma Global logo"
+            className="w-10 h-10 object-contain transition-transform group-hover:rotate-12"
+          />
           <div className="leading-tight">
             <div className="font-display text-xl text-foreground">Najma <span className="text-gold">Global</span></div>
             <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Tours & Consulting</div>

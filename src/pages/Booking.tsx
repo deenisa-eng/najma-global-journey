@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { z } from "zod";
-import { ArrowLeft, ArrowRight, Check, Copy, GraduationCap, Plane, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Copy, GraduationCap, HeartPulse, Plane, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,11 @@ import {
   formatDate, formatNGN, saveBooking,
 } from "@/data/packages";
 import { cn } from "@/lib/utils";
+import { automateBooking, type AutomationResponse } from "@/lib/amadeusAutomation";
 
 const SERVICES: { id: BookingType; title: string; desc: string; icon: any }[] = [
   { id: "study", title: "Study Abroad", desc: "Admissions consulting & placement", icon: GraduationCap },
+  { id: "medical", title: "Medical Tourism", desc: "International treatment planning & travel support", icon: HeartPulse },
   { id: "hajj", title: "Hajj 2026", desc: "31-night premium pilgrimage", icon: Sparkles },
   { id: "umrah", title: "Umrah 2026", desc: "Year-round departures", icon: Plane },
 ];
@@ -35,6 +37,7 @@ export default function Booking() {
   const [details, setDetails] = useState({ fullName: "", email: "", phone: "", notes: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
+  const [automation, setAutomation] = useState<AutomationResponse | null>(null);
 
   // Prefill from query string
   useEffect(() => {
@@ -51,13 +54,14 @@ export default function Booking() {
       const d = UMRAH_DEPARTURES.find((x) => x.id === pkgId);
       return d ? { label: `Umrah — ${d.label}`, price: UMRAH_PRICE, sub: `Depart ${formatDate(d.depart)} · Return ${formatDate(d.ret)}` } : null;
     }
-    return { label: "Study Abroad Consultation", price: 0, sub: "Free initial consultation" };
+    if (type === "study") return { label: "Study Abroad Consultation", price: 0, sub: "Free initial consultation" };
+    return { label: "Medical Tourism Consultation", price: 0, sub: "Case review and travel planning consultation" };
   }, [type, pkgId]);
 
   const next = () => setStep((s) => Math.min(s + 1, 4));
   const back = () => setStep((s) => Math.max(s - 1, 1));
 
-  const submit = () => {
+  const submit = async () => {
     const r = detailsSchema.safeParse(details);
     if (!r.success) {
       const f: Record<string, string> = {};
@@ -76,6 +80,32 @@ export default function Booking() {
       notes: details.notes || undefined,
       amount: summary.price,
     });
+
+    try {
+      const packageMeta = type === "hajj"
+        ? { departDate: HAJJ_PACKAGE.departDate, returnDate: HAJJ_PACKAGE.returnDate }
+        : type === "umrah"
+          ? (() => {
+              const d = UMRAH_DEPARTURES.find((x) => x.id === pkgId);
+              return d ? { departDate: d.depart, returnDate: d.ret } : undefined;
+            })()
+          : undefined;
+
+      const automationResult = await automateBooking({
+        type,
+        packageMeta,
+        customer: {
+          fullName: details.fullName,
+          email: details.email,
+          phone: details.phone,
+        },
+      });
+      setAutomation(automationResult);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Automation was not completed.";
+      setAutomation({ automated: false, status: "error", error: message });
+    }
+
     setConfirmedId(saved.id);
     setStep(4);
     toast.success("Booking received", { description: `Reference ${saved.id}` });
@@ -118,7 +148,7 @@ export default function Booking() {
         <div className="container-luxe max-w-4xl">
           {/* Step 1: choose service */}
           {step === 1 && (
-            <div className="grid sm:grid-cols-3 gap-4 animate-fade-in">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
               {SERVICES.map((s) => (
                 <button
                   key={s.id}
@@ -178,6 +208,13 @@ export default function Booking() {
                 <div className="glass-card rounded-sm p-7">
                   <div className="font-display text-2xl mb-2">Free Consultation</div>
                   <p className="text-sm text-muted-foreground">Tell us your details and our consultant will contact you to discuss programs, countries, and next steps.</p>
+                </div>
+              )}
+
+              {type === "medical" && (
+                <div className="glass-card rounded-sm p-7">
+                  <div className="font-display text-2xl mb-2">Medical Travel Consultation</div>
+                  <p className="text-sm text-muted-foreground">Share your case overview and preferred destination. Our advisor will guide treatment options, timelines, and travel logistics.</p>
                 </div>
               )}
 
@@ -264,6 +301,15 @@ export default function Booking() {
               <div className="text-sm space-y-1 mb-8">
                 <div><span className="text-muted-foreground">Service:</span> {summary.label}</div>
                 <div><span className="text-muted-foreground">Amount:</span> {summary.price ? formatNGN(summary.price) : "Free consultation"}</div>
+                {automation?.status === "quoted" && (
+                  <div><span className="text-muted-foreground">Amadeus:</span> Quote fetched successfully</div>
+                )}
+                {automation?.status === "manual" && (
+                  <div><span className="text-muted-foreground">Amadeus:</span> Set for manual follow-up</div>
+                )}
+                {automation?.status === "error" && (
+                  <div><span className="text-muted-foreground">Amadeus:</span> Automation failed, manual follow-up required</div>
+                )}
               </div>
 
               <div className="flex flex-wrap justify-center gap-3">

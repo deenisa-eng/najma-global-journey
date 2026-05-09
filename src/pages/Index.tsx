@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, GraduationCap, MapPin, Plane, ShieldCheck, Sparkles, Globe2, Wallet } from "lucide-react";
+import { ArrowRight, GraduationCap, HeartPulse, MapPin, Plane, ShieldCheck, Sparkles, Globe2, Wallet } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import heroKaaba from "@/assets/hero-kaaba.jpg";
@@ -28,6 +28,13 @@ const offerings = [
     desc: "Year-round Umrah departures with elegant accommodation in Makkah & Madinah.",
     image: madinah,
     to: "/umrah",
+  },
+  {
+    tag: "04 — Healthcare",
+    title: "Medical Tourism",
+    desc: "Coordinated international treatment journeys with hospital matching and end-to-end travel support.",
+    image: plane,
+    to: "/medical-tourism",
   },
 ];
 
@@ -76,9 +83,10 @@ const Index = () => {
           </div>
 
           {/* Quick links */}
-          <div className="mt-20 grid sm:grid-cols-3 gap-3 max-w-3xl">
+          <div className="mt-20 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-5xl">
             {[
               { label: "Study Abroad", to: "/study-abroad", icon: GraduationCap },
+              { label: "Medical Tourism", to: "/medical-tourism", icon: HeartPulse },
               { label: "Hajj 2026 Tickets", to: "/hajj", icon: Sparkles },
               { label: "Umrah 2026 Packages", to: "/umrah", icon: Plane },
             ].map((q) => (
@@ -127,14 +135,14 @@ const Index = () => {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
             <div className="max-w-xl">
               <div className="eyebrow mb-4">Our Offerings</div>
-              <h2 className="font-display text-4xl sm:text-5xl">Three pathways, one promise.</h2>
+              <h2 className="font-display text-4xl sm:text-5xl">Four pathways, one promise.</h2>
             </div>
             <p className="text-muted-foreground max-w-md">
               Every package is hand-curated. Every detail accounted for. Choose the journey that calls you.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
             {offerings.map((o, i) => (
               <Link
                 to={o.to}

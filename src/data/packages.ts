@@ -1,6 +1,6 @@
 // Shared mock data + helpers
 
-export type BookingType = "study" | "hajj" | "umrah";
+export type BookingType = "study" | "hajj" | "umrah" | "medical";
 
 export interface UmrahDeparture {
   id: string;

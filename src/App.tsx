@@ -7,6 +7,7 @@ import Index from "./pages/Index.tsx";
 import StudyAbroad from "./pages/StudyAbroad.tsx";
 import Hajj from "./pages/Hajj.tsx";
 import Umrah from "./pages/Umrah.tsx";
+import MedicalTourism from "./pages/MedicalTourism.tsx";
 import Booking from "./pages/Booking.tsx";
 import Contact from "./pages/Contact.tsx";
 import Admin from "./pages/Admin.tsx";
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/study-abroad" element={<StudyAbroad />} />
           <Route path="/hajj" element={<Hajj />} />
           <Route path="/umrah" element={<Umrah />} />
+          <Route path="/medical-tourism" element={<MedicalTourism />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/admin" element={<Admin />} />
