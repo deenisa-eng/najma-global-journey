@@ -46,6 +46,54 @@ export const UMRAH_DEPARTURES: UmrahDeparture[] = [
   { id: "u-oct", label: "October 2026", depart: "2026-10-08", ret: "2026-10-22", seatsLeft: 18 },
 ];
 
+export interface UmrahTier {
+  id: string;
+  tier: "Economy" | "Luxury" | "Premium";
+  stars: 4 | 5;
+  price: number;
+  duration: string;
+  totalSeats: number;
+  seatsBooked: number;
+  depart: string;
+  highlights: string[];
+}
+
+export const UMRAH_TIERS: UmrahTier[] = [
+  {
+    id: "premium",
+    tier: "Premium",
+    stars: 5,
+    price: 5_500_000,
+    duration: "14 Days Makkah & Madinah",
+    totalSeats: 15,
+    seatsBooked: 3,
+    depart: "2026-06-22",
+    highlights: ["Haram-facing 5★ hotels", "Direct Kano → Jeddah", "Private VIP transfers", "Dedicated scholar"],
+  },
+  {
+    id: "luxury",
+    tier: "Luxury",
+    stars: 5,
+    price: 3_800_000,
+    duration: "14 Days Makkah & Madinah",
+    totalSeats: 50,
+    seatsBooked: 14,
+    depart: "2026-06-22",
+    highlights: ["5★ within 400m of Haram", "Visa & ticketing", "Shared ground transport", "Group scholar"],
+  },
+  {
+    id: "economy",
+    tier: "Economy",
+    stars: 4,
+    price: 3_000_000,
+    duration: "14 Days Makkah & Madinah",
+    totalSeats: 185,
+    seatsBooked: 69,
+    depart: "2026-06-22",
+    highlights: ["4★ central hotels", "Visa processing", "Group transfers", "All meals included"],
+  },
+];
+
 export const COURSES = [
   { name: "Medicine & Surgery", desc: "Top-ranked medical schools across Europe & Asia", icon: "🩺" },
   { name: "Dentistry", desc: "Accredited dental programs with global recognition", icon: "🦷" },

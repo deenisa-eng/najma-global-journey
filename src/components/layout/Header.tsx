@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import najmaLogo from "@/assets/najma.png";
+import TopBar from "@/components/layout/TopBar";
 
 const links = [
   { to: "/", label: "Home" },
