@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, Plane } from "lucide-react";
+import { ArrowRight, Check, Plane, Star, Crown, Gem } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { UMRAH_DEPARTURES, UMRAH_INCLUSIONS, UMRAH_PRICE, formatDate, formatNGN } from "@/data/packages";
+import { UMRAH_DEPARTURES, UMRAH_INCLUSIONS, UMRAH_PRICE, UMRAH_TIERS, formatDate, formatNGN } from "@/data/packages";
 import madinah from "@/assets/madinah.jpg";
+
+const TIER_ICON = { Economy: Star, Luxury: Gem, Premium: Crown } as const;
 
 export default function Umrah() {
   return (
@@ -11,7 +13,7 @@ export default function Umrah() {
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0">
           <img src={madinah} alt="Prophet's Mosque, Madinah" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-background/30 to-background/10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-background/40 to-background/10" />
         </div>
         <div className="container-luxe relative">
           <div className="max-w-2xl animate-fade-in-up">
@@ -20,8 +22,77 @@ export default function Umrah() {
               The lesser pilgrimage. <span className="text-gold italic">Greater serenity.</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl">
-              Choose from six curated departure windows across 2026 — every package fully inclusive at <span className="text-gold font-medium">{formatNGN(UMRAH_PRICE)}</span>.
+              Choose a tier that fits your journey — every package fully inclusive, from visa to ziyarah.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Tier Cards */}
+      <section className="py-16">
+        <div className="container-luxe">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <div className="eyebrow mb-3">Featured Packages</div>
+              <h2 className="font-display text-4xl">Choose your comfort.</h2>
+            </div>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {UMRAH_TIERS.map((t) => {
+              const Icon = TIER_ICON[t.tier];
+              const pct = Math.round((t.seatsBooked / t.totalSeats) * 100);
+              const left = t.totalSeats - t.seatsBooked;
+              const featured = t.tier === "Luxury";
+              return (
+                <div
+                  key={t.id}
+                  className={`relative glass-card rounded-sm p-7 flex flex-col transition-all duration-500 hover:border-gold/60 ${featured ? "border-gold/50 shadow-gold" : ""}`}
+                >
+                  {featured && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-gold-foreground text-[10px] uppercase tracking-[0.24em] px-4 py-1 rounded-sm font-semibold">
+                      Most Booked
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="w-12 h-12 rounded-sm bg-gold/10 border border-gold/30 flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-gold" />
+                    </div>
+                    <div className="flex gap-0.5 text-gold">
+                      {Array.from({ length: t.stars }).map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-gold" />)}
+                    </div>
+                  </div>
+                  <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground mb-1">{t.tier}</div>
+                  <div className="font-display text-4xl text-gold mb-1">{formatNGN(t.price)}</div>
+                  <div className="text-xs text-muted-foreground mb-5">per person · {t.duration}</div>
+
+                  <ul className="space-y-2.5 text-sm mb-6 flex-1">
+                    {t.highlights.map((h) => (
+                      <li key={h} className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-gold mt-0.5 shrink-0" />
+                        <span className="text-foreground/90">{h}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mb-5">
+                    <div className="flex justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                      <span>{left} seats left</span>
+                      <span className="text-gold">{t.seatsBooked}/{t.totalSeats} booked</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                      <div className="h-full bg-gradient-gold transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-muted-foreground mb-4">
+                    Departure · <span className="text-foreground">{formatDate(t.depart)}</span>
+                  </div>
+                  <Button asChild variant={featured ? "gold" : "outlineGold"} className="w-full">
+                    <Link to={`/booking?type=umrah&pkg=${t.id}`}>Book This Tier <ArrowRight className="w-4 h-4" /></Link>
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -56,12 +127,11 @@ export default function Umrah() {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
             <div>
               <div className="eyebrow mb-3">2026 Schedule</div>
-              <h2 className="font-display text-4xl sm:text-5xl">Choose your departure.</h2>
+              <h2 className="font-display text-4xl sm:text-5xl">Choose your departure window.</h2>
             </div>
             <div className="text-sm text-muted-foreground">All departures from <span className="text-foreground">Kano (KAN) → Jeddah (JED)</span></div>
           </div>
 
-          {/* Desktop table */}
           <div className="hidden md:block glass-card rounded-sm overflow-hidden">
             <table className="w-full">
               <thead>
@@ -69,7 +139,7 @@ export default function Umrah() {
                   <th className="px-6 py-5">Window</th>
                   <th className="px-6 py-5">Departure</th>
                   <th className="px-6 py-5">Return</th>
-                  <th className="px-6 py-5">Price</th>
+                  <th className="px-6 py-5">From</th>
                   <th className="px-6 py-5">Seats</th>
                   <th className="px-6 py-5"></th>
                 </tr>
@@ -95,7 +165,6 @@ export default function Umrah() {
             </table>
           </div>
 
-          {/* Mobile cards */}
           <div className="md:hidden grid gap-4">
             {UMRAH_DEPARTURES.map((d) => (
               <div key={d.id} className="glass-card rounded-sm p-6">
@@ -109,7 +178,7 @@ export default function Umrah() {
                 <div className="space-y-2 text-sm mb-5">
                   <div className="flex justify-between"><span className="text-muted-foreground">Depart</span><span>{formatDate(d.depart)}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Return</span><span>{formatDate(d.ret)}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Price</span><span className="text-gold">{formatNGN(UMRAH_PRICE)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">From</span><span className="text-gold">{formatNGN(UMRAH_PRICE)}</span></div>
                 </div>
                 <Button asChild variant="gold" className="w-full">
                   <Link to={`/booking?type=umrah&pkg=${d.id}`}>Book This Departure</Link>

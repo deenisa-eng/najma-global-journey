@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import najmaLogo from "@/assets/najma.png";
+import TopBar from "@/components/layout/TopBar";
 
 const links = [
   { to: "/", label: "Home" },
@@ -37,7 +38,9 @@ export default function Header() {
           : "bg-transparent"
       )}
     >
+      <TopBar />
       <div className="container-luxe flex items-center justify-between h-20">
+
         <Link to="/" className="flex items-center gap-3 group">
           <img
             src={najmaLogo}
