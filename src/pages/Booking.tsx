@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  HAJJ_PACKAGE, UMRAH_DEPARTURES, UMRAH_PRICE, BookingType,
+  HAJJ_PACKAGE, UMRAH_TIERS, BookingType,
   formatDate, formatNGN, saveBooking,
 } from "@/data/packages";
 import { cn } from "@/lib/utils";
@@ -51,8 +51,8 @@ export default function Booking() {
     if (!type) return null;
     if (type === "hajj") return { label: HAJJ_PACKAGE.title, price: HAJJ_PACKAGE.price, sub: `${HAJJ_PACKAGE.departRoute} · ${formatDate(HAJJ_PACKAGE.departDate)}` };
     if (type === "umrah") {
-      const d = UMRAH_DEPARTURES.find((x) => x.id === pkgId);
-      return d ? { label: `Umrah — ${d.label}`, price: UMRAH_PRICE, sub: `Depart ${formatDate(d.depart)} · Return ${formatDate(d.ret)}` } : null;
+      const t = UMRAH_TIERS.find((x) => x.id === pkgId);
+      return t ? { label: `Umrah — ${t.tier} (${t.stars}★)`, price: t.price, sub: `${t.duration} · Depart ${formatDate(t.depart)}` } : null;
     }
     if (type === "study") return { label: "Study Abroad Consultation", price: 0, sub: "Free initial consultation" };
     return { label: "Medical Tourism Consultation", price: 0, sub: "Case review and travel planning consultation" };
@@ -86,8 +86,8 @@ export default function Booking() {
         ? { departDate: HAJJ_PACKAGE.departDate, returnDate: HAJJ_PACKAGE.returnDate }
         : type === "umrah"
           ? (() => {
-              const d = UMRAH_DEPARTURES.find((x) => x.id === pkgId);
-              return d ? { departDate: d.depart, returnDate: d.ret } : undefined;
+              const t = UMRAH_TIERS.find((x) => x.id === pkgId);
+              return t ? { departDate: t.depart, returnDate: undefined } : undefined;
             })()
           : undefined;
 
@@ -185,20 +185,27 @@ export default function Booking() {
               )}
 
               {type === "umrah" && (
-                <div className="grid sm:grid-cols-2 gap-3">
-                  {UMRAH_DEPARTURES.map((d) => (
+                <div className="grid sm:grid-cols-3 gap-4">
+                  {UMRAH_TIERS.map((t) => (
                     <button
-                      key={d.id}
-                      onClick={() => setPkgId(d.id)}
+                      key={t.id}
+                      onClick={() => setPkgId(t.id)}
                       className={cn(
-                        "glass-card rounded-sm p-5 text-left hover:border-gold/60 transition-all",
-                        pkgId === d.id && "border-gold"
+                        "glass-card rounded-sm p-6 text-left hover:border-gold/60 transition-all",
+                        pkgId === t.id && "border-gold"
                       )}
                     >
-                      <div className="font-display text-xl text-gold">{d.label}</div>
-                      <div className="text-xs text-muted-foreground mt-1">Depart {formatDate(d.depart)}</div>
-                      <div className="text-xs text-muted-foreground">Return {formatDate(d.ret)}</div>
-                      <div className="mt-3 text-sm">{formatNGN(UMRAH_PRICE)}</div>
+                      <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground mb-2">{t.stars}★ · {t.duration}</div>
+                      <div className="font-display text-2xl text-gold mb-1">{t.tier}</div>
+                      <div className="font-display text-xl mb-4">{formatNGN(t.price)}</div>
+                      <ul className="space-y-1">
+                        {t.highlights.map((h) => (
+                          <li key={h} className="text-xs text-muted-foreground flex items-start gap-2">
+                            <Check className="w-3 h-3 text-gold mt-0.5 shrink-0" /> {h}
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="mt-4 text-xs text-muted-foreground">{t.totalSeats - t.seatsBooked} seats left</div>
                     </button>
                   ))}
                 </div>

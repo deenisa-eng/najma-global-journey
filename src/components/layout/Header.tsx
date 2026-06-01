@@ -1,10 +1,11 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import najmaLogo from "@/assets/najma.png";
 import TopBar from "@/components/layout/TopBar";
+import { useAuth } from "@/hooks/useAuth";
 
 const links = [
   { to: "/", label: "Home" },
@@ -19,6 +20,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -71,7 +73,21 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="hidden lg:block">
+        <div className="hidden lg:flex items-center gap-3">
+          {user ? (
+            <>
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <User className="w-3.5 h-3.5" />{user.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={signOut}>
+                <LogOut className="w-3.5 h-3.5" /> Sign Out
+              </Button>
+            </>
+          ) : (
+            <Button asChild variant="outline" size="default">
+              <Link to="/auth">Sign In</Link>
+            </Button>
+          )}
           <Button asChild variant="gold" size="default">
             <Link to="/booking">Book Now</Link>
           </Button>
@@ -106,7 +122,16 @@ export default function Header() {
                 {l.label}
               </NavLink>
             ))}
-            <Button asChild variant="gold" className="mt-4">
+            {user ? (
+              <button onClick={signOut} className="py-3 px-4 text-base border-l-2 border-transparent text-muted-foreground hover:text-foreground flex items-center gap-2">
+                <LogOut className="w-4 h-4" /> Sign Out
+              </button>
+            ) : (
+              <Button asChild variant="outline" className="mt-2">
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            )}
+            <Button asChild variant="gold" className="mt-2">
               <Link to="/booking">Book Now</Link>
             </Button>
           </nav>
