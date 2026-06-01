@@ -17,8 +17,8 @@ export default function MedicalTourism() {
     <Layout>
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={plane} alt="International medical travel" className="w-full h-full object-cover opacity-30" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/70 to-background" />
+          <img src={plane} alt="International medical travel" className="w-full h-full object-cover opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/20 to-background/60" />
         </div>
         <div className="container-luxe relative">
           <div className="max-w-3xl animate-fade-in-up">

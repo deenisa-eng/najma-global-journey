@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="container-luxe py-16 grid gap-12 md:grid-cols-4">
         <div className="md:col-span-2 max-w-sm">
           <div className="flex items-center gap-3 mb-5">
-            <img src={najmaLogo} alt="Najma Global logo" className="w-10 h-10 object-contain" />
+            <img src={najmaLogo} alt="Najma Global logo" className="w-16 h-16 object-contain bg-white/90 rounded-full p-1" />
             <div className="font-display text-2xl">Najma <span className="text-gold">Global</span></div>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">

@@ -57,7 +57,7 @@ const Index = () => {
             className="w-full h-full object-cover animate-ken-burns"
           />
           <div className="absolute inset-0 bg-gradient-hero" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-background/30 to-transparent" />
         </div>
 
         <div className="container-luxe relative z-10 py-20">
@@ -157,7 +157,7 @@ const Index = () => {
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-[1.4s] group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-background/20 to-transparent" />
                 </div>
                 <div className="absolute inset-x-0 bottom-0 p-7">
                   <div className="text-[11px] uppercase tracking-[0.28em] text-gold mb-3">{o.tag}</div>
@@ -202,8 +202,8 @@ const Index = () => {
       {/* CTA */}
       <section className="relative py-24 sm:py-32 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={plane} alt="" className="w-full h-full object-cover opacity-40" loading="lazy" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-background/40" />
+          <img src={plane} alt="" className="w-full h-full object-cover opacity-70" loading="lazy" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-background/30 to-background/10" />
         </div>
         <div className="container-luxe relative">
           <div className="max-w-2xl">

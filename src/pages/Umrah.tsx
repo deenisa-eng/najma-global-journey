@@ -11,7 +11,7 @@ export default function Umrah() {
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0">
           <img src={madinah} alt="Prophet's Mosque, Madinah" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-background/30 to-background/10" />
         </div>
         <div className="container-luxe relative">
           <div className="max-w-2xl animate-fade-in-up">
