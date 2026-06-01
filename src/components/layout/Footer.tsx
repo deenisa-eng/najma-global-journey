@@ -21,10 +21,9 @@ export default function Footer() {
           <ul className="space-y-3 text-sm">
             <li><Link to="/study-abroad" className="hover:text-gold transition-colors">Study Abroad</Link></li>
             <li><Link to="/medical-tourism" className="hover:text-gold transition-colors">Medical Tourism</Link></li>
-            <li><Link to="/hajj" className="hover:text-gold transition-colors">Hajj 2026</Link></li>
-            <li><Link to="/umrah" className="hover:text-gold transition-colors">Umrah 2026</Link></li>
+            <li><Link to="/hajj" className="hover:text-gold transition-colors">Hajj</Link></li>
+            <li><Link to="/umrah" className="hover:text-gold transition-colors">Umrah</Link></li>
             <li><Link to="/booking" className="hover:text-gold transition-colors">Book a Service</Link></li>
-            <li><Link to="/admin" className="hover:text-gold transition-colors">Admin</Link></li>
           </ul>
         </div>
 

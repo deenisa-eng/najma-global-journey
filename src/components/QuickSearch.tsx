@@ -4,8 +4,8 @@ import { Search, Plane, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const SERVICES = [
-  { value: "umrah", label: "Umrah 2026" },
-  { value: "hajj", label: "Hajj 2026" },
+  { value: "umrah", label: "Umrah" },
+  { value: "hajj", label: "Hajj" },
   { value: "study", label: "Study Abroad" },
   { value: "medical", label: "Medical Tourism" },
 ];

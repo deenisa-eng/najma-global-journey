@@ -20,14 +20,14 @@ const offerings = [
   },
   {
     tag: "02 — Pilgrimage",
-    title: "Hajj 2026",
+    title: "Hajj",
     desc: "A premium 31-night pilgrimage from Kano to the Holy Cities, fully inclusive of visa, flights & accommodation.",
     image: heroKaaba,
     to: "/hajj",
   },
   {
     tag: "03 — Sacred Travel",
-    title: "Umrah 2026",
+    title: "Umrah",
     desc: "Year-round Umrah departures with elegant accommodation in Makkah & Madinah.",
     image: madinah,
     to: "/umrah",
@@ -96,8 +96,8 @@ const Index = () => {
             {[
               { label: "Study Abroad", to: "/study-abroad", icon: GraduationCap },
               { label: "Medical Tourism", to: "/medical-tourism", icon: HeartPulse },
-              { label: "Hajj 2026 Tickets", to: "/hajj", icon: Sparkles },
-              { label: "Umrah 2026 Packages", to: "/umrah", icon: Plane },
+              { label: "Hajj Tickets", to: "/hajj", icon: Sparkles },
+              { label: "Umrah Packages", to: "/umrah", icon: Plane },
             ].map((q) => (
               <Link
                 key={q.label}
@@ -169,7 +169,7 @@ const Index = () => {
                     loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-[1.4s] group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-background/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
                 </div>
                 <div className="absolute inset-x-0 bottom-0 p-7">
                   <div className="text-[11px] uppercase tracking-[0.28em] text-gold mb-3">{o.tag}</div>

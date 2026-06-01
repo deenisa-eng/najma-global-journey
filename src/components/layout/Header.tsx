@@ -10,8 +10,8 @@ const links = [
   { to: "/", label: "Home" },
   { to: "/study-abroad", label: "Study Abroad" },
   { to: "/medical-tourism", label: "Medical Tourism" },
-  { to: "/hajj", label: "Hajj 2026" },
-  { to: "/umrah", label: "Umrah 2026" },
+  { to: "/hajj", label: "Hajj" },
+  { to: "/umrah", label: "Umrah" },
   { to: "/contact", label: "Contact" },
 ];
 

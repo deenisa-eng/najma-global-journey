@@ -18,8 +18,8 @@ import { automateBooking, type AutomationResponse } from "@/lib/amadeusAutomatio
 const SERVICES: { id: BookingType; title: string; desc: string; icon: any }[] = [
   { id: "study", title: "Study Abroad", desc: "Admissions consulting & placement", icon: GraduationCap },
   { id: "medical", title: "Medical Tourism", desc: "International treatment planning & travel support", icon: HeartPulse },
-  { id: "hajj", title: "Hajj 2026", desc: "31-night premium pilgrimage", icon: Sparkles },
-  { id: "umrah", title: "Umrah 2026", desc: "Year-round departures", icon: Plane },
+  { id: "hajj", title: "Hajj", desc: "31-night premium pilgrimage", icon: Sparkles },
+  { id: "umrah", title: "Umrah", desc: "Year-round departures", icon: Plane },
 ];
 
 const detailsSchema = z.object({
