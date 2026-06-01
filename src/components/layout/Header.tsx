@@ -38,7 +38,9 @@ export default function Header() {
           : "bg-transparent"
       )}
     >
+      <TopBar />
       <div className="container-luxe flex items-center justify-between h-20">
+
         <Link to="/" className="flex items-center gap-3 group">
           <img
             src={najmaLogo}
