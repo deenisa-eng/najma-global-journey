@@ -138,6 +138,9 @@ const Index = () => {
         </div>
       </section>
 
+      <StatsStrip />
+
+
       {/* OFFERINGS */}
       <section className="py-24 sm:py-32 bg-gradient-navy">
         <div className="container-luxe">
