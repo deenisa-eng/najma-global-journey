@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 import { ArrowRight, GraduationCap, HeartPulse, MapPin, Plane, ShieldCheck, Sparkles, Globe2, Wallet } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
+import QuickSearch from "@/components/QuickSearch";
+import StatsStrip from "@/components/StatsStrip";
+import FAQ from "@/components/FAQ";
 import heroKaaba from "@/assets/hero-kaaba.jpg";
 import madinah from "@/assets/madinah.jpg";
 import studyAbroad from "@/assets/study-abroad.jpg";
@@ -82,8 +85,14 @@ const Index = () => {
             </div>
           </div>
 
+          {/* Quick search */}
+          <div className="mt-16 max-w-5xl">
+            <div className="text-[10px] uppercase tracking-[0.28em] text-gold mb-3">Quick Search</div>
+            <QuickSearch />
+          </div>
+
           {/* Quick links */}
-          <div className="mt-20 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-5xl">
+          <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-5xl">
             {[
               { label: "Study Abroad", to: "/study-abroad", icon: GraduationCap },
               { label: "Medical Tourism", to: "/medical-tourism", icon: HeartPulse },
