@@ -211,6 +211,9 @@ const Index = () => {
         </div>
       </section>
 
+      <FAQ />
+
+
       {/* CTA */}
       <section className="relative py-24 sm:py-32 overflow-hidden">
         <div className="absolute inset-0">
