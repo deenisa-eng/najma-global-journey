@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound.tsx";
 
 import { AuthProvider } from "./hooks/useAuth";
 import Auth from "./pages/Auth.tsx";
+import AdminLogin from "./pages/AdminLogin.tsx";
 import ScrollToTop from "./components/ScrollToTop.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 
@@ -36,7 +37,8 @@ const App = () => (
             <Route path="/medical-tourism" element={<MedicalTourism />} />
             <Route path="/booking" element={<ProtectedRoute><Booking /></ProtectedRoute>} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
