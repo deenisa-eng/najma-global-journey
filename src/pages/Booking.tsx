@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  HAJJ_PACKAGE, UMRAH_TIERS, UMRAH_DEPARTURES, BookingType,
+  HAJJ_PACKAGE, UMRAH_TIERS, BookingType,
   formatDate, formatNGN,
 } from "@/data/packages";
+import { getUmrahDepartures, getHajjPackage } from "@/lib/schedules";
 import { cn } from "@/lib/utils";
 import { automateBooking, type AutomationResponse } from "@/lib/amadeusAutomation";
 
@@ -41,6 +42,8 @@ export default function Booking() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
   const [automation, setAutomation] = useState<AutomationResponse | null>(null);
+  const [departures, setDepartures] = useState<any[]>([]);
+  const [hajjPackage, setHajjPackage] = useState<any>(HAJJ_PACKAGE);
 
   useEffect(() => {
     if (user?.email) {
@@ -50,15 +53,24 @@ export default function Booking() {
 
   // Prefill from query string
   useEffect(() => {
-    const t = params.get("type") as BookingType | null;
-    const p = params.get("pkg");
-    if (t && SERVICES.some((s) => s.id === t)) { setType(t); setStep(2); }
-    if (p) {
-      const tier = UMRAH_TIERS.find((x) => x.id === p);
-      const departure = UMRAH_DEPARTURES.find((x) => x.id === p);
-      if (tier) setPkgId(p);
-      else if (departure) setSelectedDepartureId(p);
-    }
+    let mounted = true;
+    (async () => {
+      const [d, h] = await Promise.all([getUmrahDepartures(), getHajjPackage()]);
+      if (!mounted) return;
+      setDepartures(d as any);
+      setHajjPackage(h as any);
+
+      const t = params.get("type") as BookingType | null;
+      const p = params.get("pkg");
+      if (t && SERVICES.some((s) => s.id === t)) { setType(t); setStep(2); }
+      if (p) {
+        const tier = UMRAH_TIERS.find((x) => x.id === p);
+        const departure = (d as any).find((x: any) => x.id === p);
+        if (tier) setPkgId(p);
+        else if (departure) setSelectedDepartureId(p);
+      }
+    })();
+    return () => { mounted = false; };
   }, []); // eslint-disable-line
 
   const getReturnDate = (departDate: string) => {
@@ -68,12 +80,12 @@ export default function Booking() {
   };
 
   const selectedDeparture = selectedDepartureId
-    ? UMRAH_DEPARTURES.find((x) => x.id === selectedDepartureId)
+    ? departures.find((x) => x.id === selectedDepartureId)
     : null;
 
   const summary = useMemo(() => {
     if (!type) return null;
-    if (type === "hajj") return { label: HAJJ_PACKAGE.title, price: HAJJ_PACKAGE.price, sub: `${HAJJ_PACKAGE.departRoute} · ${formatDate(HAJJ_PACKAGE.departDate)}` };
+    if (type === "hajj") return { label: hajjPackage.title, price: hajjPackage.price, sub: `${hajjPackage.departRoute} · ${formatDate(hajjPackage.departDate)}` };
     if (type === "umrah") {
       const t = UMRAH_TIERS.find((x) => x.id === pkgId);
       if (!t) return null;
@@ -132,7 +144,7 @@ export default function Booking() {
       }
 
       const packageMeta = type === "hajj"
-        ? { departDate: HAJJ_PACKAGE.departDate, returnDate: HAJJ_PACKAGE.returnDate }
+        ? { departDate: hajjPackage.departDate, returnDate: hajjPackage.returnDate }
         : type === "umrah"
           ? (() => {
               const t = UMRAH_TIERS.find((x) => x.id === pkgId);

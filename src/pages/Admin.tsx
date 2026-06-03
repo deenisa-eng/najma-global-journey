@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { formatNGN } from "@/data/packages";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
+import { getUmrahDepartures, upsertUmrahDeparture, deleteUmrahDeparture } from "@/lib/schedules";
 
 type Inquiry = {
   id: string;
@@ -35,6 +36,9 @@ export default function Admin() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [filter, setFilter] = useState<"all" | "pending" | "confirmed">("all");
   const [loading, setLoading] = useState(true);
+  const [departures, setDepartures] = useState<any[]>([]);
+  const [depForm, setDepForm] = useState({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" });
+  const [depLoading, setDepLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -43,6 +47,14 @@ export default function Admin() {
       supabase.from("bookings").select("*").order("created_at", { ascending: false }),
       supabase.from("contact_inquiries").select("*").order("created_at", { ascending: false }),
     ]);
+
+    // fetch departures too
+    try {
+      const d = await getUmrahDepartures();
+      setDepartures(d as any[]);
+    } catch (e) {
+      // ignore
+    }
 
     if (bErr) toast.error(`Bookings error: ${bErr.message}`);
     else setBookings(bData ?? []);
@@ -119,6 +131,56 @@ export default function Admin() {
             <div className="glass-card rounded-sm p-6">
               <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground mb-2">Confirmed Revenue</div>
               <div className="font-display text-3xl text-gold">{formatNGN(totals.revenue)}</div>
+            </div>
+          </div>
+
+          {/* Manage Umrah Departures */}
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-4">
+              <h2 className="font-display text-3xl">Manage Umrah Departures</h2>
+            </div>
+            <div className="grid gap-3 mb-4">
+              {departures.map((d) => (
+                <div key={d.id} className="glass-card rounded-sm p-4 flex items-center justify-between">
+                  <div>
+                    <div className="font-display">{d.label}</div>
+                    <div className="text-xs text-muted-foreground">{new Date(d.depart).toLocaleDateString()} → {new Date(d.ret).toLocaleDateString()}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm text-muted-foreground">{d.seatsLeft} seats</div>
+                    <Button size="sm" variant="ghost" onClick={async () => {
+                      setDepLoading(true);
+                      await deleteUmrahDeparture(d.id);
+                      const d2 = await getUmrahDepartures();
+                      setDepartures(d2 as any[]);
+                      setDepLoading(false);
+                    }}>
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="glass-card rounded-sm p-6">
+              <div className="grid sm:grid-cols-4 gap-3">
+                <input value={depForm.label} onChange={(e) => setDepForm((s) => ({ ...s, label: e.target.value }))} placeholder="Label (e.g. July 2026)" className="input" />
+                <input value={depForm.depart} onChange={(e) => setDepForm((s) => ({ ...s, depart: e.target.value }))} placeholder="YYYY-MM-DD" className="input" />
+                <input value={depForm.ret} onChange={(e) => setDepForm((s) => ({ ...s, ret: e.target.value }))} placeholder="YYYY-MM-DD" className="input" />
+                <input value={depForm.seatsLeft} onChange={(e) => setDepForm((s) => ({ ...s, seatsLeft: e.target.value }))} placeholder="Seats" className="input" />
+              </div>
+              <div className="mt-4 flex gap-2">
+                <Button variant="gold" onClick={async () => {
+                  setDepLoading(true);
+                  const payload = { label: depForm.label, depart: depForm.depart, ret: depForm.ret, seatsLeft: Number(depForm.seatsLeft) };
+                  await upsertUmrahDeparture(payload as any);
+                  const d2 = await getUmrahDepartures();
+                  setDepartures(d2 as any[]);
+                  setDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" });
+                  setDepLoading(false);
+                }} disabled={depLoading}>Save</Button>
+                <Button variant="outline" onClick={() => setDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" })}>Reset</Button>
+              </div>
             </div>
           </div>
 

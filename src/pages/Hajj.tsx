@@ -3,10 +3,25 @@ import { Plane, ArrowRight, Check, Clock, Building2, Banknote } from "lucide-rea
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import Countdown from "@/components/Countdown";
-import { HAJJ_PACKAGE, formatNGN, formatDate } from "@/data/packages";
+import { formatNGN, formatDate } from "@/data/packages";
+import { useEffect, useState } from "react";
+import { getHajjPackage } from "@/lib/schedules";
 import heroKaaba from "@/assets/hero-kaaba.jpg";
 
 export default function Hajj() {
+  const [hajjPackage, setHajjPackage] = useState<any>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const h = await getHajjPackage();
+      if (!mounted) return;
+      setHajjPackage(h);
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const pkg = hajjPackage ?? { departDate: "", returnDate: "", price: 0, departRoute: "", returnRoute: "", title: "Hajj" , seatsLeft: 0, inclusions: [] };
   return (
     <Layout>
       <section className="relative pt-32 pb-20 overflow-hidden">
@@ -16,7 +31,7 @@ export default function Hajj() {
         </div>
         <div className="container-luxe relative">
           <div className="max-w-2xl animate-fade-in-up">
-            <div className="eyebrow mb-5">Hajj 2026 · Limited Seats</div>
+            <div className="eyebrow mb-5">{pkg.title} · Limited Seats</div>
             <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl leading-tight mb-6">
               The pilgrimage <span className="text-gold italic">of a lifetime.</span>
             </h1>
@@ -45,10 +60,10 @@ export default function Hajj() {
                 <h2 className="font-display text-3xl sm:text-4xl">Time until takeoff from Kano.</h2>
               </div>
               <div className="text-sm text-muted-foreground tabular-nums">
-                Departing {formatDate(HAJJ_PACKAGE.departDate)}
+                Departing {formatDate(pkg.departDate)}
               </div>
             </div>
-            <Countdown target={HAJJ_PACKAGE.departDate} />
+            <Countdown target={pkg.departDate} />
           </div>
         </div>
       </section>
@@ -59,7 +74,7 @@ export default function Hajj() {
           <div className="lg:col-span-2 space-y-8">
             <div>
               <div className="eyebrow mb-3">The Package</div>
-              <h2 className="font-display text-4xl sm:text-5xl mb-4">Hajj 2026 — Premium Pilgrimage</h2>
+              <h2 className="font-display text-4xl sm:text-5xl mb-4">{pkg.title}</h2>
               <p className="text-muted-foreground leading-relaxed">
                 A fully-inclusive package designed for comfort, security and spiritual focus. Travel with an experienced group leader and certified Saudi operators.
               </p>
@@ -68,20 +83,20 @@ export default function Hajj() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="glass-card rounded-sm p-6">
                 <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Departure</div>
-                <div className="font-display text-2xl text-gold">{HAJJ_PACKAGE.departRoute}</div>
-                <div className="text-sm mt-1">{formatDate(HAJJ_PACKAGE.departDate)}</div>
+                <div className="font-display text-2xl text-gold">{pkg.departRoute}</div>
+                <div className="text-sm mt-1">{formatDate(pkg.departDate)}</div>
               </div>
               <div className="glass-card rounded-sm p-6">
                 <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">Return</div>
-                <div className="font-display text-2xl text-gold">{HAJJ_PACKAGE.returnRoute}</div>
-                <div className="text-sm mt-1">{formatDate(HAJJ_PACKAGE.returnDate)}</div>
+                <div className="font-display text-2xl text-gold">{pkg.returnRoute}</div>
+                <div className="text-sm mt-1">{formatDate(pkg.returnDate)}</div>
               </div>
             </div>
 
             <div>
               <h3 className="font-display text-2xl mb-4">What's included</h3>
               <ul className="grid sm:grid-cols-2 gap-3">
-                {HAJJ_PACKAGE.inclusions.map((inc) => (
+                {pkg.inclusions.map((inc: string) => (
                   <li key={inc} className="flex items-start gap-3 text-sm">
                     <span className="w-5 h-5 rounded-full bg-gold/20 border border-gold flex items-center justify-center mt-0.5 shrink-0">
                       <Check className="w-3 h-3 text-gold" />
@@ -114,14 +129,14 @@ export default function Hajj() {
           <aside className="lg:sticky lg:top-28 h-fit">
             <div className="glass-card rounded-sm p-8 border-gold/40 shadow-elegant">
               <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-2">All-inclusive from</div>
-              <div className="font-display text-5xl text-gold mb-1">{formatNGN(HAJJ_PACKAGE.price)}</div>
+              <div className="font-display text-5xl text-gold mb-1">{formatNGN(pkg.price)}</div>
               <div className="text-sm text-muted-foreground mb-6">per pilgrim</div>
 
               <div className="gold-divider my-6" />
 
               <div className="flex items-center justify-between mb-6">
                 <span className="text-sm">Seats remaining</span>
-                <span className="font-display text-xl text-gold">{HAJJ_PACKAGE.seatsLeft}</span>
+                <span className="font-display text-xl text-gold">{pkg.seatsLeft}</span>
               </div>
 
               <Button asChild variant="gold" size="lg" className="w-full mb-3">

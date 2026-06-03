@@ -2,12 +2,27 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Check, Plane, Star, Crown, Gem } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { UMRAH_DEPARTURES, UMRAH_INCLUSIONS, UMRAH_PRICE, UMRAH_TIERS, formatDate, formatNGN } from "@/data/packages";
+import { UMRAH_INCLUSIONS, UMRAH_PRICE, UMRAH_TIERS, formatDate, formatNGN } from "@/data/packages";
+import { useEffect, useState } from "react";
+import { getUmrahDepartures, UmrahDeparture } from "@/lib/schedules";
 import madinah from "@/assets/madinah.jpg";
 
 const TIER_ICON = { Economy: Star, Luxury: Gem, Premium: Crown } as const;
 
 export default function Umrah() {
+  const [departures, setDepartures] = useState<UmrahDeparture[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const d = await getUmrahDepartures();
+      if (!mounted) return;
+      setDepartures(d);
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const yearLabel = departures[0] ? new Date(departures[0].depart).getFullYear() : new Date().getFullYear();
   return (
     <Layout>
       <section className="relative pt-32 pb-20 overflow-hidden">
@@ -17,7 +32,7 @@ export default function Umrah() {
         </div>
         <div className="container-luxe relative">
           <div className="max-w-2xl animate-fade-in-up">
-            <div className="eyebrow mb-5">Umrah 2026 · Year-Round Departures</div>
+            <div className="eyebrow mb-5">Umrah {yearLabel} · Year-Round Departures</div>
             <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl leading-tight mb-6">
               The lesser pilgrimage. <span className="text-gold italic">Greater serenity.</span>
             </h1>
@@ -38,7 +53,7 @@ export default function Umrah() {
             </div>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {UMRAH_TIERS.map((t) => {
+                {UMRAH_TIERS.map((t) => {
               const Icon = TIER_ICON[t.tier];
               const pct = Math.round((t.seatsBooked / t.totalSeats) * 100);
               const left = t.totalSeats - t.seatsBooked;
@@ -145,7 +160,7 @@ export default function Umrah() {
                 </tr>
               </thead>
               <tbody>
-                {UMRAH_DEPARTURES.map((d) => (
+                {departures.map((d) => (
                   <tr key={d.id} className="border-b border-border/50 hover:bg-secondary/40 transition-colors">
                     <td className="px-6 py-5 font-display text-lg text-gold">{d.label}</td>
                     <td className="px-6 py-5 text-sm">{formatDate(d.depart)}</td>
@@ -166,7 +181,7 @@ export default function Umrah() {
           </div>
 
           <div className="md:hidden grid gap-4">
-            {UMRAH_DEPARTURES.map((d) => (
+            {departures.map((d) => (
               <div key={d.id} className="glass-card rounded-sm p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
