@@ -19,7 +19,7 @@ const signInSchema = z.object({
 export default function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const from = (location.state as { from?: string })?.from ?? "/admin";
 
   const [form, setForm] = useState({ email: "", password: "" });
@@ -31,10 +31,10 @@ export default function AdminLogin() {
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!authLoading && user) {
       navigate(isAdmin ? "/admin" : "/portal", { replace: true });
     }
-  }, [loading, user, isAdmin, navigate]);
+  }, [authLoading, user, isAdmin, navigate]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,9 +131,9 @@ export default function AdminLogin() {
               {errors.password && <p className="text-xs text-destructive mt-1">{errors.password}</p>}
             </div>
 
-            <Button variant="gold" size="lg" className="w-full mt-2" disabled={loading}>
-              {loading ? "Please wait…" : "Sign In"}
-              {!loading && <ArrowRight className="w-4 h-4" />}
+            <Button variant="gold" size="lg" className="w-full mt-2" disabled={submitting}>
+              {submitting ? "Please wait…" : "Sign In"}
+              {!submitting && <ArrowRight className="w-4 h-4" />}
             </Button>
           </form>
         </div>

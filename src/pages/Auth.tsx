@@ -30,8 +30,8 @@ const signUpSchema = z.object({
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, loading, isAdmin } = useAuth();
-  const from = (location.state as { from?: string })?.from ?? "/";
+  const { user, loading: authLoading, isAdmin } = useAuth();
+  const from = (location.state as { from?: string })?.from ?? "/portal";
 
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [form, setForm] = useState({ fullName: "", email: "", password: "", confirmPassword: "" });
@@ -49,10 +49,10 @@ export default function Auth() {
   };
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!authLoading && user) {
       navigate(isAdmin ? "/admin" : "/portal", { replace: true });
     }
-  }, [loading, user, isAdmin, navigate]);
+  }, [authLoading, user, isAdmin, navigate]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,9 +209,9 @@ export default function Auth() {
               </div>
             )}
 
-            <Button variant="gold" size="lg" className="w-full mt-2" disabled={loading}>
-              {loading ? "Please wait…" : mode === "signin" ? "Sign In" : "Create Account"}
-              {!loading && <ArrowRight className="w-4 h-4" />}
+            <Button variant="gold" size="lg" className="w-full mt-2" disabled={submitting}>
+              {submitting ? "Please wait…" : mode === "signin" ? "Sign In" : "Create Account"}
+              {!submitting && <ArrowRight className="w-4 h-4" />}
             </Button>
           </form>
 
