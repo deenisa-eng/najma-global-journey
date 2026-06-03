@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { signIn } from "@/lib/auth";
 import najmaLogo from "@/assets/najma.png";
 import heroKaaba from "@/assets/hero-kaaba.jpg";
+import { useAuth } from "@/hooks/useAuth";
 
 const signInSchema = z.object({
   email: z.string().trim().email("Invalid email"),
@@ -18,15 +19,22 @@ const signInSchema = z.object({
 export default function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, loading, isAdmin } = useAuth();
   const from = (location.state as { from?: string })?.from ?? "/admin";
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [showPw, setShowPw] = useState(false);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate(isAdmin ? "/admin" : "/portal", { replace: true });
+    }
+  }, [loading, user, isAdmin, navigate]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,11 +46,11 @@ export default function AdminLogin() {
       return;
     }
     setErrors({});
-    setLoading(true);
+    setSubmitting(true);
 
     const { error } = await signIn(form.email, form.password);
 
-    setLoading(false);
+    setSubmitting(false);
 
     if (error) { toast.error(error.message); return; }
 

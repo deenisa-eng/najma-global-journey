@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn, signUp } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/hooks/useAuth";
 import najmaLogo from "@/assets/najma.png";
 import heroKaaba from "@/assets/hero-kaaba.jpg";
 
@@ -28,12 +30,13 @@ const signUpSchema = z.object({
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, loading, isAdmin } = useAuth();
   const from = (location.state as { from?: string })?.from ?? "/";
 
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [form, setForm] = useState({ fullName: "", email: "", password: "", confirmPassword: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [showPw, setShowPw] = useState(false);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -44,6 +47,12 @@ export default function Auth() {
     setErrors({});
     setForm({ fullName: "", email: "", password: "", confirmPassword: "" });
   };
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate(isAdmin ? "/admin" : "/portal", { replace: true });
+    }
+  }, [loading, user, isAdmin, navigate]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,17 +65,24 @@ export default function Auth() {
       return;
     }
     setErrors({});
-    setLoading(true);
+    setSubmitting(true);
 
-    const { error } = mode === "signin"
+    const { error, data } = mode === "signin"
       ? await signIn(form.email, form.password)
-      : await signUp(form.email, form.password);
+      : await signUp(form.email, form.password, form.fullName);
 
-    setLoading(false);
+    setSubmitting(false);
 
     if (error) { toast.error(error.message); return; }
 
     if (mode === "signup") {
+      if (data?.user) {
+        await supabase.from("user_profiles").upsert({
+          user_id: data.user.id,
+          email: form.email,
+          full_name: form.fullName,
+        }, { onConflict: "user_id" });
+      }
       toast.success("Account created! Check your email to confirm.");
     } else {
       toast.success("Welcome back!");

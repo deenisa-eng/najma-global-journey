@@ -25,9 +25,16 @@ export interface AutomationResponse {
 }
 
 export async function automateBooking(payload: AutomationRequest): Promise<AutomationResponse> {
-  const res = await fetch("/api/amadeus-booking", {
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const endpoint = `${supabaseUrl}/functions/v1/amadeus-booking`;
+
+  const res = await fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${anonKey}`,
+    },
     body: JSON.stringify(payload),
   });
 

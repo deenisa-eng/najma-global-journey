@@ -20,7 +20,7 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -76,10 +76,12 @@ export default function Header() {
         <div className="hidden lg:flex items-center gap-3">
           {user ? (
             <>
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <User className="w-3.5 h-3.5" />{user.email}
-              </span>
-              <Button variant="outline" size="sm" onClick={signOut}>
+              <Button asChild variant="outline" size="sm">
+                <Link to={isAdmin ? "/admin" : "/portal"}>
+                  <User className="w-3.5 h-3.5" /> My Portal
+                </Link>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={signOut}>
                 <LogOut className="w-3.5 h-3.5" /> Sign Out
               </Button>
             </>
@@ -122,6 +124,11 @@ export default function Header() {
                 {l.label}
               </NavLink>
             ))}
+            {user && (
+              <Button asChild variant="outline" className="mt-2">
+                <Link to={isAdmin ? "/admin" : "/portal"}>My Portal</Link>
+              </Button>
+            )}
             {user ? (
               <button onClick={signOut} className="py-3 px-4 text-base border-l-2 border-transparent text-muted-foreground hover:text-foreground flex items-center gap-2">
                 <LogOut className="w-4 h-4" /> Sign Out

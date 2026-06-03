@@ -1,0 +1,4 @@
+project_id = "chhtzqpyvheuklyrsmjj"
+
+# Functions directory for Supabase Edge Functions
+functions = "supabase/functions"

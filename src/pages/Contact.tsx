@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/lib/supabase";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(100),
@@ -18,7 +19,7 @@ export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const r = schema.safeParse(form);
     if (!r.success) {
@@ -28,6 +29,13 @@ export default function Contact() {
       return;
     }
     setErrors({});
+    const { error } = await supabase.from("contact_inquiries").insert({
+      name: form.name,
+      email: form.email,
+      message: form.message,
+      source: "website",
+    });
+    if (error) { toast.error(error.message); return; }
     toast.success("Message sent", { description: "We'll respond within one business day." });
     setForm({ name: "", email: "", message: "" });
   };

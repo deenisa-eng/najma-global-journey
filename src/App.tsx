@@ -10,6 +10,7 @@ import Umrah from "./pages/Umrah.tsx";
 import MedicalTourism from "./pages/MedicalTourism.tsx";
 import Booking from "./pages/Booking.tsx";
 import Contact from "./pages/Contact.tsx";
+import Portal from "./pages/Portal.tsx";
 import Admin from "./pages/Admin.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/hajj" element={<Hajj />} />
             <Route path="/umrah" element={<Umrah />} />
             <Route path="/medical-tourism" element={<MedicalTourism />} />
+            <Route path="/portal" element={<ProtectedRoute><Portal /></ProtectedRoute>} />
             <Route path="/booking" element={<ProtectedRoute><Booking /></ProtectedRoute>} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
