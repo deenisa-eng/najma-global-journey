@@ -288,29 +288,38 @@ export default function Booking() {
                     </div>
                   </div>
 
-                  <div className="grid sm:grid-cols-3 gap-4">
-                    {umrahTiers.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => setPkgId(t.id)}
-                        className={cn(
-                          "glass-card rounded-sm p-6 text-left hover:border-gold/60 transition-all",
-                          pkgId === t.id && "border-gold"
-                        )}
-                      >
-                        <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground mb-2">{t.stars}★ · {t.duration}</div>
-                        <div className="font-display text-2xl text-gold mb-1">{t.tier}</div>
-                        <div className="font-display text-xl mb-4">{formatNGN(t.price)}</div>
-                        <ul className="space-y-1">
-                          {t.highlights.map((h) => (
-                            <li key={h} className="text-xs text-muted-foreground flex items-start gap-2">
-                              <Check className="w-3 h-3 text-gold mt-0.5 shrink-0" /> {h}
-                            </li>
-                          ))}
-                        </ul>
-                        <div className="mt-4 text-xs text-muted-foreground">{t.totalSeats - t.seatsBooked} seats left</div>
-                      </button>
-                    ))}
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <div className="font-display text-2xl">Select your desired package</div>
+                        <div className="text-sm text-muted-foreground">Choose the comfort level that best suits your spiritual journey.</div>
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-3 gap-4">
+                      {umrahTiers.map((t) => (
+                        <button
+                          key={t.id}
+                          onClick={() => setPkgId(t.id)}
+                          className={cn(
+                            "glass-card rounded-sm p-6 text-left hover:border-gold/60 transition-all",
+                            pkgId === t.id ? "border-gold bg-gold/5 shadow-gold" : "border-border"
+                          )}
+                        >
+                          <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground mb-2">{t.stars}★ · {t.duration}</div>
+                          <div className="font-display text-2xl text-gold mb-1">{t.tier}</div>
+                          <div className="font-display text-xl mb-4">{formatNGN(t.price)}</div>
+                          <ul className="space-y-1">
+                            {t.highlights.map((h) => (
+                              <li key={h} className="text-xs text-muted-foreground flex items-start gap-2">
+                                <Check className="w-3 h-3 text-gold mt-0.5 shrink-0" /> {h}
+                              </li>
+                            ))}
+                          </ul>
+                          <div className="mt-4 text-xs text-muted-foreground">{t.totalSeats - t.seatsBooked} seats left</div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -352,7 +361,7 @@ export default function Booking() {
           {/* Step 3: details */}
           {step === 3 && summary && (
             <div className="animate-fade-in grid lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2 glass-card rounded-sm p-7 space-y-5">
+              <div className="lg:col-span-2 glass-card rounded-sm p-5 sm:p-7 space-y-5">
                 <div>
                   <Label htmlFor="fn">Full Name</Label>
                   <Input id="fn" value={details.fullName} onChange={(e) => setDetails({ ...details, fullName: e.target.value })} className="mt-2" />
@@ -374,65 +383,75 @@ export default function Booking() {
                   <Label htmlFor="nt">Notes (optional)</Label>
                   <Textarea id="nt" rows={4} value={details.notes} onChange={(e) => setDetails({ ...details, notes: e.target.value })} className="mt-2" />
                 </div>
-                <div className="flex justify-between pt-2">
-                  <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4" /> Back</Button>
-                  <Button variant="gold" size="lg" onClick={submit}>Confirm Booking</Button>
+                <div className="flex flex-col sm:flex-row justify-between gap-3 pt-2">
+                  <Button variant="ghost" onClick={back} className="order-2 sm:order-1"><ArrowLeft className="w-4 h-4" /> Back</Button>
+                  <Button variant="gold" size="lg" onClick={submit} className="order-1 sm:order-2 w-full sm:w-auto">Confirm Booking</Button>
                 </div>
               </div>
 
-              <aside className="glass-card rounded-sm p-7 h-fit border-gold/30">
+              <aside className="glass-card rounded-sm p-6 sm:p-7 h-fit border-gold/30">
                 <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground mb-2">Summary</div>
-                <div className="font-display text-2xl mb-2">{summary.label}</div>
-                <div className="text-sm text-muted-foreground mb-6">{summary.sub}</div>
+                <div className="font-display text-2xl mb-2 leading-tight">{summary.label}</div>
+                <div className="text-sm text-muted-foreground mb-6 leading-relaxed">{summary.sub}</div>
                 <div className="gold-divider mb-6" />
-                <div className="flex justify-between text-sm mb-2">
+                <div className="flex justify-between items-center text-sm mb-2">
                   <span className="text-muted-foreground">Amount</span>
                   <span className="font-display text-xl text-gold">{summary.price ? formatNGN(summary.price) : "—"}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-4">A consultant will follow up to confirm payment & next steps.</p>
+                <p className="text-xs text-muted-foreground mt-4 italic">A consultant will follow up to confirm payment & next steps.</p>
               </aside>
             </div>
           )}
 
           {/* Step 4: confirmation */}
           {step === 4 && confirmedId && summary && (
-            <div className="animate-fade-in glass-card rounded-sm p-10 text-center max-w-2xl mx-auto">
+            <div className="animate-fade-in glass-card rounded-sm p-6 sm:p-10 text-center max-w-2xl mx-auto">
               <div className="w-16 h-16 rounded-full bg-gold/20 border border-gold flex items-center justify-center mx-auto mb-6">
                 <Check className="w-7 h-7 text-gold" />
               </div>
               <div className="eyebrow mb-3 justify-center">Booking Confirmed</div>
-              <h2 className="font-display text-4xl mb-3">Thank you, {details.fullName.split(" ")[0]}.</h2>
-              <p className="text-muted-foreground mb-6">Your reservation has been received. Our team will reach out shortly with payment details and next steps.</p>
+              <h2 className="font-display text-3xl sm:text-4xl mb-3 px-2">Thank you, {details.fullName.split(" ")[0]}.</h2>
+              <p className="text-muted-foreground mb-8 text-sm sm:text-base leading-relaxed px-2">Your reservation has been received. Our team will reach out shortly with payment details and next steps.</p>
 
-              <div className="bg-secondary/40 rounded-sm p-5 mb-6 inline-flex items-center gap-3">
-                <span className="text-xs uppercase tracking-[0.22em] text-muted-foreground">Reference</span>
-                <span className="font-display text-xl text-gold tabular-nums">{confirmedId}</span>
-                <button
-                  onClick={() => { navigator.clipboard.writeText(confirmedId); toast.success("Copied"); }}
-                  className="text-muted-foreground hover:text-gold transition-colors"
-                  aria-label="Copy reference"
-                >
-                  <Copy className="w-4 h-4" />
-                </button>
+              <div className="bg-secondary/40 rounded-sm p-4 sm:p-5 mb-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Reference</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-display text-xl text-gold tabular-nums">{confirmedId}</span>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(confirmedId); toast.success("Copied"); }}
+                    className="text-muted-foreground hover:text-gold transition-colors p-1"
+                    aria-label="Copy reference"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
-              <div className="text-sm space-y-1 mb-8">
-                <div><span className="text-muted-foreground">Service:</span> {summary.label}</div>
-                <div><span className="text-muted-foreground">Amount:</span> {summary.price ? formatNGN(summary.price) : "Free consultation"}</div>
-                {automation?.status === "quoted" && (
-                  <div><span className="text-muted-foreground">Amadeus:</span> Quote fetched successfully</div>
-                )}
-                {automation?.status === "manual" && (
-                  <div><span className="text-muted-foreground">Amadeus:</span> Set for manual follow-up</div>
-                )}
-                {automation?.status === "error" && (
-                  <div><span className="text-muted-foreground">Amadeus:</span> Automation failed, manual follow-up required</div>
+              <div className="text-sm space-y-2 mb-10 text-muted-foreground">
+                <div className="flex flex-col sm:flex-row justify-between gap-1 border-b border-border/40 pb-2 sm:pb-1">
+                  <span>Service:</span> 
+                  <span className="text-foreground font-medium">{summary.label}</span>
+                </div>
+                <div className="flex flex-col sm:flex-row justify-between gap-1 border-b border-border/40 pb-2 sm:pb-1">
+                  <span>Amount:</span> 
+                  <span className="text-gold font-medium">{summary.price ? formatNGN(summary.price) : "Free consultation"}</span>
+                </div>
+                {automation?.status && (
+                  <div className="flex flex-col sm:flex-row justify-between gap-1 border-b border-border/40 pb-2 sm:pb-1 text-[11px] uppercase tracking-tighter">
+                    <span>Automation Status:</span>
+                    <span className="text-foreground font-bold">
+                      {automation.status === "quoted" ? "Quote Ready" : automation.status === "manual" ? "Queued for Admin" : "Contact Sales"}
+                    </span>
+                  </div>
                 )}
               </div>
 
-              <div className="flex flex-wrap justify-center gap-3">
-                <Button asChild variant="gold"><Link to="/">Back to Home</Link></Button>
-                <Button asChild variant="outline"><Link to="/contact">Contact Us</Link></Button>
+              <div className="flex flex-col sm:flex-row justify-center gap-3">
+                <Button asChild variant="gold" className="w-full sm:w-auto"><Link to="/">Back to Home</Link></Button>
+                <Button asChild variant="outline" className="w-full sm:w-auto"><Link to="/contact">Contact Us</Link></Button>
+              </div>
+            </div>
+          )}
               </div>
             </div>
           )}
