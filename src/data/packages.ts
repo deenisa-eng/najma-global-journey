@@ -1,6 +1,6 @@
-// Shared mock data + helpers
+// Shared types + helpers
 
-export type BookingType = "study" | "hajj" | "umrah" | "medical";
+export type BookingType = "study" | "hajj" | "umrah" | "medical" | "travel";
 
 export interface UmrahDeparture {
   id: string;
@@ -10,40 +10,12 @@ export interface UmrahDeparture {
   seatsLeft: number;
 }
 
-export const HAJJ_PACKAGE = {
-  id: "hajj-2026",
-  title: "Hajj 2026 — Premium Pilgrimage",
-  departDate: "2026-05-10",
-  returnDate: "2026-06-10",
-  departRoute: "Kano → Madinah",
-  returnRoute: "Jeddah → Kano",
-  price: 1_900_000,
-  seatsLeft: 18,
-  inclusions: [
-    "Return airfare (Kano · Madinah · Jeddah · Kano)",
-    "Visa processing & documentation",
-    "Madinah & Makkah accommodation",
-    "Daily ground transport",
-    "Experienced guide & ihram support",
-    "All meals included",
-  ],
-};
-
 export const UMRAH_PRICE = 3_000_000;
 export const UMRAH_INCLUSIONS = [
   "Umrah Visa",
   "Return Air Ticket (Kano ↔ Jeddah)",
   "Ground Transport in Saudi Arabia",
   "Premium Accommodation (Makkah & Madinah)",
-];
-
-export const UMRAH_DEPARTURES: UmrahDeparture[] = [
-  { id: "u-jan", label: "January 2026", depart: "2026-01-15", ret: "2026-01-29", seatsLeft: 12 },
-  { id: "u-feb", label: "February 2026", depart: "2026-02-12", ret: "2026-02-26", seatsLeft: 9 },
-  { id: "u-mar", label: "March 2026 (Ramadan)", depart: "2026-03-05", ret: "2026-03-22", seatsLeft: 4 },
-  { id: "u-apr", label: "April 2026", depart: "2026-04-09", ret: "2026-04-23", seatsLeft: 14 },
-  { id: "u-jul", label: "July 2026", depart: "2026-07-16", ret: "2026-07-30", seatsLeft: 16 },
-  { id: "u-oct", label: "October 2026", depart: "2026-10-08", ret: "2026-10-22", seatsLeft: 18 },
 ];
 
 export interface UmrahTier {
@@ -54,7 +26,6 @@ export interface UmrahTier {
   duration: string;
   totalSeats: number;
   seatsBooked: number;
-  depart: string;
   highlights: string[];
 }
 
@@ -67,7 +38,6 @@ export const UMRAH_TIERS: UmrahTier[] = [
     duration: "14 Days Makkah & Madinah",
     totalSeats: 15,
     seatsBooked: 3,
-    depart: "2026-06-22",
     highlights: ["Haram-facing 5★ hotels", "Direct Kano → Jeddah", "Private VIP transfers", "Dedicated scholar"],
   },
   {
@@ -78,7 +48,6 @@ export const UMRAH_TIERS: UmrahTier[] = [
     duration: "14 Days Makkah & Madinah",
     totalSeats: 50,
     seatsBooked: 14,
-    depart: "2026-06-22",
     highlights: ["5★ within 400m of Haram", "Visa & ticketing", "Shared ground transport", "Group scholar"],
   },
   {
@@ -89,7 +58,6 @@ export const UMRAH_TIERS: UmrahTier[] = [
     duration: "14 Days Makkah & Madinah",
     totalSeats: 185,
     seatsBooked: 69,
-    depart: "2026-06-22",
     highlights: ["4★ central hotels", "Visa processing", "Group transfers", "All meals included"],
   },
 ];

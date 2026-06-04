@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin, Instagram } from "lucide-react";
+import { Mail, Phone, MapPin, Instagram, Facebook, Twitter, Music2 } from "lucide-react";
 import najmaLogo from "@/assets/najma.png";
 
 export default function Footer() {
@@ -20,6 +20,7 @@ export default function Footer() {
           <div className="eyebrow mb-5">Explore</div>
           <ul className="space-y-3 text-sm">
             <li><Link to="/study-abroad" className="hover:text-gold transition-colors">Study Abroad</Link></li>
+            <li><Link to="/travel-visas" className="hover:text-gold transition-colors">Travel & Visas</Link></li>
             <li><Link to="/medical-tourism" className="hover:text-gold transition-colors">Medical Tourism</Link></li>
             <li><Link to="/hajj" className="hover:text-gold transition-colors">Hajj</Link></li>
             <li><Link to="/umrah" className="hover:text-gold transition-colors">Umrah</Link></li>
@@ -29,12 +30,25 @@ export default function Footer() {
 
         <div>
           <div className="eyebrow mb-5">Contact</div>
-          <ul className="space-y-3 text-sm text-muted-foreground">
+          <ul className="space-y-3 text-sm text-muted-foreground mb-6">
             <li className="flex gap-3"><Phone className="w-4 h-4 text-gold mt-0.5 shrink-0" /> 0816 776 7271</li>
             <li className="flex gap-3"><Mail className="w-4 h-4 text-gold mt-0.5 shrink-0" /> info@najmaglobaltours.com</li>
             <li className="flex gap-3"><MapPin className="w-4 h-4 text-gold mt-0.5 shrink-0" /> Tafawa Balewa Road, CBD Abuja</li>
-            <li className="flex gap-3"><Instagram className="w-4 h-4 text-gold mt-0.5 shrink-0" /> @najmaglobaltours</li>
           </ul>
+          <div className="flex gap-4">
+            <a href="https://instagram.com/najmaglobaltours" target="_blank" rel="noreferrer" className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center text-gold hover:bg-gold hover:text-gold-foreground transition-all" title="Instagram">
+              <Instagram className="w-4 h-4" />
+            </a>
+            <a href="https://x.com/Najmaglobaltour" target="_blank" rel="noreferrer" className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center text-gold hover:bg-gold hover:text-gold-foreground transition-all" title="X (Twitter)">
+              <Twitter className="w-4 h-4" />
+            </a>
+            <a href="https://www.facebook.com/najmaglobaltoursconsult?mibextid=ZbWKwL" target="_blank" rel="noreferrer" className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center text-gold hover:bg-gold hover:text-gold-foreground transition-all" title="Facebook">
+              <Facebook className="w-4 h-4" />
+            </a>
+            <a href="https://vm.tiktok.com/ZS92xRGqGX9Hw-iCIO0/" target="_blank" rel="noreferrer" className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center text-gold hover:bg-gold hover:text-gold-foreground transition-all" title="TikTok">
+              <Music2 className="w-4 h-4" />
+            </a>
+          </div>
         </div>
       </div>
       <div className="border-t border-border/60">

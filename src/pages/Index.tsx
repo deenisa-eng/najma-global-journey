@@ -33,7 +33,14 @@ const offerings = [
     to: "/umrah",
   },
   {
-    tag: "04 — Healthcare",
+    tag: "04 — Global Travel",
+    title: "Business & Tourism",
+    desc: "Visa processing and travel planning for business trips, family visits, and global tourism destinations.",
+    image: plane,
+    to: "/travel-visas",
+  },
+  {
+    tag: "05 — Healthcare",
     title: "Medical Tourism",
     desc: "Coordinated international treatment journeys with hospital matching and end-to-end travel support.",
     image: plane,
@@ -69,11 +76,11 @@ const Index = () => {
               <span className="w-8 h-px bg-gold" /> Najma Global Tours & Consulting
             </div>
             <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.05] mb-6">
-              Sacred journeys.<br />
-              <span className="text-gold italic">Global futures.</span>
+              If you can dream it,<br />
+              <span className="text-gold italic">we can book it.</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl mb-10 leading-relaxed">
-              From the courtyards of Makkah to the lecture halls of London — we craft transformative travel and education experiences for the next generation of Nigerian leaders.
+              From sacred pilgrimages and international education to global business and leisure travel — we master the complexities of global logistics to ensure your journey is as remarkable as your destination.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button asChild variant="gold" size="lg">
@@ -92,10 +99,11 @@ const Index = () => {
           </div>
 
           {/* Quick links */}
-          <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-3 max-w-5xl">
+          <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-5 gap-3 max-w-5xl">
             {[
               { label: "Study Abroad", to: "/study-abroad", icon: GraduationCap },
               { label: "Medical Tourism", to: "/medical-tourism", icon: HeartPulse },
+              { label: "Business & Tourism", to: "/travel-visas", icon: Globe2 },
               { label: "Hajj Tickets", to: "/hajj", icon: Sparkles },
               { label: "Umrah Packages", to: "/umrah", icon: Plane },
             ].map((q) => (
@@ -104,9 +112,9 @@ const Index = () => {
                 to={q.to}
                 className="glass-card rounded-sm px-5 py-4 flex items-center justify-between group hover:border-gold/60 transition-all"
               >
-                <span className="flex items-center gap-3 text-sm">
-                  <q.icon className="w-4 h-4 text-gold" />
-                  {q.label}
+                <span className="flex flex-col gap-1">
+                  <q.icon className="w-4 h-4 text-gold mb-1" />
+                  <span className="text-xs font-medium">{q.label}</span>
                 </span>
                 <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-1 transition-all" />
               </Link>
@@ -147,14 +155,14 @@ const Index = () => {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
             <div className="max-w-xl">
               <div className="eyebrow mb-4">Our Offerings</div>
-              <h2 className="font-display text-4xl sm:text-5xl">Four pathways, one promise.</h2>
+              <h2 className="font-display text-4xl sm:text-5xl">Five pathways, one promise.</h2>
             </div>
             <p className="text-muted-foreground max-w-md">
               Every package is hand-curated. Every detail accounted for. Choose the journey that calls you.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-6">
             {offerings.map((o, i) => (
               <Link
                 to={o.to}
@@ -173,9 +181,9 @@ const Index = () => {
                 </div>
                 <div className="absolute inset-x-0 bottom-0 p-7">
                   <div className="text-[11px] uppercase tracking-[0.28em] text-gold mb-3">{o.tag}</div>
-                  <h3 className="font-display text-3xl mb-3">{o.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{o.desc}</p>
-                  <div className="inline-flex items-center gap-2 text-sm text-gold luxe-link">
+                  <h3 className="font-display text-2xl mb-3">{o.title}</h3>
+                  <p className="text-xs text-muted-foreground mb-5 leading-relaxed">{o.desc}</p>
+                  <div className="inline-flex items-center gap-2 text-xs text-gold luxe-link">
                     Discover <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </div>
                 </div>

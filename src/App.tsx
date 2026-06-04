@@ -8,10 +8,12 @@ import StudyAbroad from "./pages/StudyAbroad.tsx";
 import Hajj from "./pages/Hajj.tsx";
 import Umrah from "./pages/Umrah.tsx";
 import MedicalTourism from "./pages/MedicalTourism.tsx";
+import TravelVisas from "./pages/TravelVisas.tsx";
 import Booking from "./pages/Booking.tsx";
 import Contact from "./pages/Contact.tsx";
 import Portal from "./pages/Portal.tsx";
 import Admin from "./pages/Admin.tsx";
+import AdminForgotPassword from "./pages/AdminForgotPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 import { AuthProvider } from "./hooks/useAuth";
@@ -36,11 +38,13 @@ const App = () => (
             <Route path="/hajj" element={<Hajj />} />
             <Route path="/umrah" element={<Umrah />} />
             <Route path="/medical-tourism" element={<MedicalTourism />} />
+            <Route path="/travel-visas" element={<TravelVisas />} />
             <Route path="/portal" element={<ProtectedRoute><Portal /></ProtectedRoute>} />
             <Route path="/booking" element={<ProtectedRoute><Booking /></ProtectedRoute>} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="/admin/*" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

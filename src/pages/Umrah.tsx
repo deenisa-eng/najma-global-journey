@@ -1,23 +1,31 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, Plane, Star, Crown, Gem } from "lucide-react";
+import { ArrowRight, Check, Plane, Star, Crown, Gem, RefreshCw } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { UMRAH_INCLUSIONS, UMRAH_PRICE, UMRAH_TIERS, formatDate, formatNGN } from "@/data/packages";
-import { useEffect, useState } from "react";
-import { getUmrahDepartures, UmrahDeparture } from "@/lib/schedules";
+import { UMRAH_INCLUSIONS, UMRAH_PRICE, formatDate, formatNGN } from "@/data/packages";
+import { getUmrahDepartures, getUmrahTiers, type UmrahDeparture, type UmrahTier } from "@/lib/schedules";
 import madinah from "@/assets/madinah.jpg";
 
-const TIER_ICON = { Economy: Star, Luxury: Gem, Premium: Crown } as const;
+const TIER_ICON: Record<string, any> = { Economy: Star, Luxury: Gem, Premium: Crown };
 
 export default function Umrah() {
   const [departures, setDepartures] = useState<UmrahDeparture[]>([]);
+  const [tiers, setTiers] = useState<UmrahTier[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const d = await getUmrahDepartures();
-      if (!mounted) return;
-      setDepartures(d);
+      setLoading(true);
+      try {
+        const [d, t] = await Promise.all([getUmrahDepartures(), getUmrahTiers()]);
+        if (!mounted) return;
+        setDepartures(d);
+        setTiers(t);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     })();
     return () => { mounted = false; };
   }, []);
@@ -53,61 +61,69 @@ export default function Umrah() {
             </div>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-                {UMRAH_TIERS.map((t) => {
-              const Icon = TIER_ICON[t.tier];
-              const pct = Math.round((t.seatsBooked / t.totalSeats) * 100);
-              const left = t.totalSeats - t.seatsBooked;
-              const featured = t.tier === "Luxury";
-              return (
-                <div
-                  key={t.id}
-                  className={`relative glass-card rounded-sm p-7 flex flex-col transition-all duration-500 hover:border-gold/60 ${featured ? "border-gold/50 shadow-gold" : ""}`}
-                >
-                  {featured && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-gold-foreground text-[10px] uppercase tracking-[0.24em] px-4 py-1 rounded-sm font-semibold">
-                      Most Booked
+            {loading ? (
+              <div className="col-span-3 py-20 text-center">
+                <RefreshCw className="w-10 h-10 animate-spin mx-auto text-gold/40 mb-4" />
+                <p className="text-muted-foreground">Loading premium packages...</p>
+              </div>
+            ) : tiers.length === 0 ? (
+              <div className="col-span-3 py-20 text-center glass-card rounded-sm border-dashed">
+                <p className="text-muted-foreground">No Umrah tiers currently configured. Please check back later.</p>
+              </div>
+            ) : (
+              tiers.map((t) => {
+                const Icon = TIER_ICON[t.tier] || Star;
+                const pct = Math.round((t.seatsBooked / t.totalSeats) * 100);
+                const left = t.totalSeats - t.seatsBooked;
+                const featured = t.isFeatured;
+                return (
+                  <div
+                    key={t.id}
+                    className={`relative glass-card rounded-sm p-7 flex flex-col transition-all duration-500 hover:border-gold/60 ${featured ? "border-gold/50 shadow-gold" : ""}`}
+                  >
+                    {featured && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-gold-foreground text-[10px] uppercase tracking-[0.24em] px-4 py-1 rounded-sm font-semibold">
+                        Most Booked
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="w-12 h-12 rounded-sm bg-gold/10 border border-gold/30 flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-gold" />
+                      </div>
+                      <div className="flex gap-0.5 text-gold">
+                        {Array.from({ length: t.stars }).map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-gold" />)}
+                      </div>
                     </div>
-                  )}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className="w-12 h-12 rounded-sm bg-gold/10 border border-gold/30 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-gold" />
-                    </div>
-                    <div className="flex gap-0.5 text-gold">
-                      {Array.from({ length: t.stars }).map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-gold" />)}
-                    </div>
-                  </div>
-                  <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground mb-1">{t.tier}</div>
-                  <div className="font-display text-4xl text-gold mb-1">{formatNGN(t.price)}</div>
-                  <div className="text-xs text-muted-foreground mb-5">per person · {t.duration}</div>
+                    <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground mb-1">{t.tier}</div>
+                    <div className="font-display text-4xl text-gold mb-1">{formatNGN(t.price)}</div>
+                    <div className="text-xs text-muted-foreground mb-5">per person · {t.duration}</div>
 
-                  <ul className="space-y-2.5 text-sm mb-6 flex-1">
-                    {t.highlights.map((h) => (
-                      <li key={h} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-gold mt-0.5 shrink-0" />
-                        <span className="text-foreground/90">{h}</span>
-                      </li>
-                    ))}
-                  </ul>
+                    <ul className="space-y-2.5 text-sm mb-6 flex-1">
+                      {t.highlights.map((h) => (
+                        <li key={h} className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-gold mt-0.5 shrink-0" />
+                          <span className="text-foreground/90">{h}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-                  <div className="mb-5">
-                    <div className="flex justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
-                      <span>{left} seats left</span>
-                      <span className="text-gold">{t.seatsBooked}/{t.totalSeats} booked</span>
+                    <div className="mb-5">
+                      <div className="flex justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                        <span>{left} seats left</span>
+                        <span className="text-gold">{t.seatsBooked}/{t.totalSeats} booked</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <div className="h-full bg-gradient-gold transition-all" style={{ width: `${pct}%` }} />
+                      </div>
                     </div>
-                    <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                      <div className="h-full bg-gradient-gold transition-all" style={{ width: `${pct}%` }} />
-                    </div>
-                  </div>
 
-                  <div className="text-xs text-muted-foreground mb-4">
-                    Departure · <span className="text-foreground">{formatDate(t.depart)}</span>
+                    <Button asChild variant={featured ? "gold" : "outlineGold"} className="mt-auto w-full">
+                      <Link to={`/booking?type=umrah&pkg=${t.id}`}>Book This Tier <ArrowRight className="w-4 h-4" /></Link>
+                    </Button>
                   </div>
-                  <Button asChild variant={featured ? "gold" : "outlineGold"} className="w-full">
-                    <Link to={`/booking?type=umrah&pkg=${t.id}`}>Book This Tier <ArrowRight className="w-4 h-4" /></Link>
-                  </Button>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       </section>

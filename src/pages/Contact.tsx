@@ -1,4 +1,4 @@
-import { Phone, Mail, MapPin, Instagram, MessageCircle } from "lucide-react";
+import { Phone, Mail, MapPin, Instagram, MessageCircle, Facebook, Twitter, Music2 } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -44,7 +44,10 @@ export default function Contact() {
     { icon: Phone, label: "Phone", value: "0816 776 7271", href: "tel:+2348167767271" },
     { icon: Mail, label: "Email", value: "info@najmaglobaltours.com", href: "mailto:info@najmaglobaltours.com" },
     { icon: MapPin, label: "Office", value: "Tafawa Balewa Road, CBD Abuja", href: "#" },
-    { icon: Instagram, label: "Instagram / X", value: "@najmaglobaltours", href: "https://instagram.com/najmaglobaltours" },
+    { icon: Instagram, label: "Instagram", value: "@najmaglobaltours", href: "https://instagram.com/najmaglobaltours" },
+    { icon: Twitter, label: "X (Twitter)", value: "@Najmaglobaltour", href: "https://x.com/Najmaglobaltour" },
+    { icon: Facebook, label: "Facebook", value: "Najma Global Tours", href: "https://www.facebook.com/najmaglobaltoursconsult?mibextid=ZbWKwL" },
+    { icon: Music2, label: "TikTok", value: "@najmaglobaltour", href: "https://vm.tiktok.com/ZS92xRGqGX9Hw-iCIO0/" },
   ];
 
   return (
@@ -62,18 +65,20 @@ export default function Contact() {
       <section className="pb-24">
         <div className="container-luxe grid lg:grid-cols-2 gap-10">
           <div className="space-y-4">
-            {channels.map((c) => (
-              <a key={c.label} href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer"
-                className="glass-card rounded-sm p-6 flex items-start gap-5 hover:border-gold/50 transition-all group">
-                <div className="w-12 h-12 rounded-sm bg-gold/15 border border-gold/30 flex items-center justify-center shrink-0 group-hover:bg-gold/25 transition-colors">
-                  <c.icon className="w-5 h-5 text-gold" />
-                </div>
-                <div>
-                  <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground mb-1">{c.label}</div>
-                  <div className="font-display text-xl">{c.value}</div>
-                </div>
-              </a>
-            ))}
+            <div className="grid sm:grid-cols-2 gap-4">
+              {channels.map((c) => (
+                <a key={c.label} href={c.href} target={c.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer"
+                  className="glass-card rounded-sm p-5 flex items-start gap-4 hover:border-gold/50 transition-all group">
+                  <div className="w-10 h-10 rounded-sm bg-gold/15 border border-gold/30 flex items-center justify-center shrink-0 group-hover:bg-gold/25 transition-colors">
+                    <c.icon className="w-4 h-4 text-gold" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground mb-1">{c.label}</div>
+                    <div className="font-display text-sm truncate">{c.value}</div>
+                  </div>
+                </a>
+              ))}
+            </div>
 
             <a
               href="https://wa.me/2348167767271"

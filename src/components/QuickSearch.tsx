@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plane, Calendar, Users } from "lucide-react";
+import { Search, Plane, Calendar, Users, Globe2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const SERVICES = [
   { value: "umrah", label: "Umrah" },
   { value: "hajj", label: "Hajj" },
+  { value: "travel", label: "Business & Tourism" },
   { value: "study", label: "Study Abroad" },
   { value: "medical", label: "Medical Tourism" },
 ];

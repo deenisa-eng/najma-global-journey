@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 const links = [
   { to: "/", label: "Home" },
   { to: "/study-abroad", label: "Study Abroad" },
+  { to: "/travel-visas", label: "Travel & Visas" },
   { to: "/medical-tourism", label: "Medical Tourism" },
   { to: "/hajj", label: "Hajj" },
   { to: "/umrah", label: "Umrah" },
