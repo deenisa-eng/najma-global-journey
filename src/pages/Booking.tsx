@@ -350,7 +350,7 @@ export default function Booking() {
                 <Button
                   variant="gold"
                   onClick={next}
-                  disabled={type === "umrah" && !pkgId}
+                  disabled={type === "umrah" && (!pkgId || !selectedDepartureId)}
                 >
                   Continue <ArrowRight className="w-4 h-4" />
                 </Button>
@@ -449,9 +449,6 @@ export default function Booking() {
               <div className="flex flex-col sm:flex-row justify-center gap-3">
                 <Button asChild variant="gold" className="w-full sm:w-auto"><Link to="/">Back to Home</Link></Button>
                 <Button asChild variant="outline" className="w-full sm:w-auto"><Link to="/contact">Contact Us</Link></Button>
-              </div>
-            </div>
-          )}
               </div>
             </div>
           )}
