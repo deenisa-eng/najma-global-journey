@@ -84,7 +84,7 @@ export default function Umrah() {
                 const pct = Math.round((t.seatsBooked / t.totalSeats) * 100);
                 const left = t.totalSeats - t.seatsBooked;
                 const featured = t.isFeatured;
-                const img = TIER_IMAGE[t.tier] || madinah;
+                const img = t.imageUrl || TIER_IMAGE[t.tier] || madinah;
                 return (
                   <div
                     key={t.id}

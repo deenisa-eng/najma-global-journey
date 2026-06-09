@@ -75,7 +75,7 @@ export default function PackageDetails() {
     );
   }
 
-  const img = TIER_IMAGE[tier.tier] || madinah;
+  const img = tier.imageUrl || TIER_IMAGE[tier.tier] || madinah;
   const pct = Math.round((tier.seatsBooked / tier.totalSeats) * 100);
   const left = tier.totalSeats - tier.seatsBooked;
   const deposit = Math.round(tier.price * 0.4);

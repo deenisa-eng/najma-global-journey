@@ -8,6 +8,9 @@ export type UmrahDeparture = {
   seatsLeft: number;
 };
 
+export type TravelDeparture = UmrahDeparture;
+export type BusinessDeparture = UmrahDeparture;
+
 export type HajjPackage = {
   id: string;
   title: string;
@@ -33,6 +36,7 @@ export type PackageTier = {
   seatsBooked: number;
   highlights: string[];
   isFeatured: boolean;
+  imageUrl?: string;
 };
 
 export type UmrahTier = PackageTier;
@@ -63,6 +67,7 @@ function normalizePackageTier(row: any): PackageTier {
     seatsBooked: row.seats_booked || 0,
     highlights: row.highlights || [],
     isFeatured: row.is_featured || false,
+    imageUrl: row.image_url,
   };
 }
 
@@ -85,6 +90,7 @@ export async function upsertPackageTier(tier: Partial<PackageTier> & { id: strin
     seats_booked: tier.seatsBooked,
     highlights: tier.highlights,
     is_featured: tier.isFeatured,
+    image_url: tier.imageUrl,
     updated_at: new Date().toISOString(),
   };
 
@@ -108,6 +114,20 @@ export async function getUmrahDepartures(): Promise<UmrahDeparture[]> {
   return (data as any[]).map(normalizeUmrahDeparture);
 }
 
+export async function getTravelDepartures(): Promise<TravelDeparture[]> {
+  const { data, error } = await supabase.from("travel_departures").select("*").order("depart", { ascending: true });
+  if (error) throw error;
+  if (!data) return [];
+  return (data as any[]).map(normalizeUmrahDeparture);
+}
+
+export async function getBusinessDepartures(): Promise<BusinessDeparture[]> {
+  const { data, error } = await supabase.from("business_departures").select("*").order("depart", { ascending: true });
+  if (error) throw error;
+  if (!data) return [];
+  return (data as any[]).map(normalizeUmrahDeparture);
+}
+
 export async function upsertUmrahDeparture(dep: Partial<UmrahDeparture> & { id?: string }) {
   const seatsLeft = Number(dep.seatsLeft ?? (dep as any).seatsleft ?? 0);
   const payload = {
@@ -126,9 +146,65 @@ export async function upsertUmrahDeparture(dep: Partial<UmrahDeparture> & { id?:
   }
 }
 
+export async function upsertTravelDeparture(dep: Partial<TravelDeparture> & { id?: string }) {
+  const seatsLeft = Number(dep.seatsLeft ?? (dep as any).seatsleft ?? 0);
+  const payload = {
+    id: dep.id ?? `t-${Date.now()}`,
+    label: dep.label ?? "New",
+    depart: dep.depart ?? new Date().toISOString().split("T")[0],
+    ret: dep.ret ?? new Date().toISOString().split("T")[0],
+    seatsleft: Number.isFinite(seatsLeft) ? seatsLeft : 0,
+  };
+  try {
+    const { data, error } = await supabase.from("travel_departures").upsert(payload, { onConflict: "id" }).select().maybeSingle();
+    if (error) throw error;
+    return normalizeUmrahDeparture(data);
+  } catch (err) {
+    return { ...payload, seatsLeft: payload.seatsleft } as TravelDeparture;
+  }
+}
+
+export async function upsertBusinessDeparture(dep: Partial<BusinessDeparture> & { id?: string }) {
+  const seatsLeft = Number(dep.seatsLeft ?? (dep as any).seatsleft ?? 0);
+  const payload = {
+    id: dep.id ?? `b-${Date.now()}`,
+    label: dep.label ?? "New",
+    depart: dep.depart ?? new Date().toISOString().split("T")[0],
+    ret: dep.ret ?? new Date().toISOString().split("T")[0],
+    seatsleft: Number.isFinite(seatsLeft) ? seatsLeft : 0,
+  };
+  try {
+    const { data, error } = await supabase.from("business_departures").upsert(payload, { onConflict: "id" }).select().maybeSingle();
+    if (error) throw error;
+    return normalizeUmrahDeparture(data);
+  } catch (err) {
+    return { ...payload, seatsLeft: payload.seatsleft } as BusinessDeparture;
+  }
+}
+
 export async function deleteUmrahDeparture(id: string) {
   try {
     const { error } = await supabase.from("umrah_departures").delete().eq("id", id);
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+export async function deleteTravelDeparture(id: string) {
+  try {
+    const { error } = await supabase.from("travel_departures").delete().eq("id", id);
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+export async function deleteBusinessDeparture(id: string) {
+  try {
+    const { error } = await supabase.from("business_departures").delete().eq("id", id);
     if (error) throw error;
     return true;
   } catch (err) {

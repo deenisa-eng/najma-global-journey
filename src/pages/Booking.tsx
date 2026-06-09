@@ -13,7 +13,7 @@ import {
   BookingType,
   formatDate, formatNGN,
 } from "@/data/packages";
-import { getUmrahDepartures, getHajjPackage, getPackageTiers, type PackageTier } from "@/lib/schedules";
+import { getUmrahDepartures, getHajjPackage, getPackageTiers, getTravelDepartures, type PackageTier } from "@/lib/schedules";
 import { cn } from "@/lib/utils";
 import { automateBooking, type AutomationResponse } from "@/lib/amadeusAutomation";
 
@@ -58,14 +58,16 @@ export default function Booking() {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const [d, h, umrahData, travelData] = await Promise.all([
-        getUmrahDepartures(),
-        getHajjPackage(),
-        getPackageTiers("umrah"),
-        getPackageTiers("travel"),
-      ]);
+        const [d, h, umrahData, travelData, travelDeps] = await Promise.all([
+          getUmrahDepartures(),
+          getHajjPackage(),
+          getPackageTiers("umrah"),
+          getPackageTiers("travel"),
+          getTravelDepartures(),
+        ]);
       if (!mounted) return;
-      setDepartures(d as any);
+        // combine umrah + travel departures so booking can pick either
+        setDepartures([...(d as any[]), ...(travelDeps as any[])]);
       setHajjPackage(h as any);
       setUmrahTiers(umrahData);
       setTravelTiers(travelData);
@@ -75,7 +77,7 @@ export default function Booking() {
       if (t && SERVICES.some((s) => s.id === t)) { setType(t); setStep(2); }
       if (p) {
         const tier = [...umrahData, ...travelData].find((x) => x.id === p);
-        const departure = (d as any).find((x: any) => x.id === p);
+        const departure = ([...(d as any), ...(travelDeps as any)] as any).find((x: any) => x.id === p);
         if (tier) setPkgId(p);
         else if (departure) setSelectedDepartureId(p);
       }
