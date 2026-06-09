@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Check, Globe2, Briefcase, Camera, Users, ShieldCheck } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import plane from "@/assets/plane.jpg";
+import plane from "@/assets/travel-visas.jpg";
 
 const travelTypes = [
   {
