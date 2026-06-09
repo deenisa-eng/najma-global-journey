@@ -6,8 +6,16 @@ import { Button } from "@/components/ui/button";
 import { UMRAH_INCLUSIONS, UMRAH_PRICE, formatDate, formatNGN } from "@/data/packages";
 import { getUmrahDepartures, getUmrahTiers, type UmrahDeparture, type UmrahTier } from "@/lib/schedules";
 import madinah from "@/assets/madinah.jpg";
+import umrahPremium from "@/assets/umrah-premium.jpg";
+import umrahLuxury from "@/assets/umrah-luxury.jpg";
+import umrahEconomy from "@/assets/umrah-economy.jpg";
 
 const TIER_ICON: Record<string, any> = { Economy: Star, Luxury: Gem, Premium: Crown };
+const TIER_IMAGE: Record<string, string> = {
+  Premium: umrahPremium,
+  Luxury: umrahLuxury,
+  Economy: umrahEconomy,
+};
 
 export default function Umrah() {
   const [departures, setDepartures] = useState<UmrahDeparture[]>([]);
