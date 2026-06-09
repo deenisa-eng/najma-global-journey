@@ -9,6 +9,7 @@ import heroKaaba from "@/assets/hero-kaaba.jpg";
 import madinah from "@/assets/madinah.jpg";
 import studyAbroad from "@/assets/study-abroad.jpg";
 import plane from "@/assets/plane.jpg";
+import travelVisas from "@/assets/travel-visas.jpg";
 
 const offerings = [
   {
@@ -36,7 +37,7 @@ const offerings = [
     tag: "04 — Global Travel",
     title: "Business & Tourism",
     desc: "Visa processing and travel planning for business trips, family visits, and global tourism destinations.",
-    image: plane,
+    image: travelVisas,
     to: "/travel-visas",
   },
   {
