@@ -20,13 +20,13 @@ export default function AdminForgotPassword() {
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    const { data: subscription } = supabase.auth.onAuthStateChange((event) => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setRecoveryMode(true);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => data.subscription.unsubscribe();
   }, []);
 
   const sendResetEmail = async (e: FormEvent<HTMLFormElement>) => {
