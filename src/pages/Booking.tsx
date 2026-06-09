@@ -13,7 +13,7 @@ import {
   BookingType,
   formatDate, formatNGN,
 } from "@/data/packages";
-import { getUmrahDepartures, getHajjPackage, getUmrahTiers, type UmrahTier } from "@/lib/schedules";
+import { getUmrahDepartures, getHajjPackage, getPackageTiers, type PackageTier } from "@/lib/schedules";
 import { cn } from "@/lib/utils";
 import { automateBooking, type AutomationResponse } from "@/lib/amadeusAutomation";
 
@@ -45,7 +45,8 @@ export default function Booking() {
   const [automation, setAutomation] = useState<AutomationResponse | null>(null);
   const [departures, setDepartures] = useState<any[]>([]);
   const [hajjPackage, setHajjPackage] = useState<any>(null);
-  const [umrahTiers, setUmrahTiers] = useState<UmrahTier[]>([]);
+  const [umrahTiers, setUmrahTiers] = useState<PackageTier[]>([]);
+  const [travelTiers, setTravelTiers] = useState<PackageTier[]>([]);
 
   useEffect(() => {
     if (user?.email) {
@@ -57,17 +58,23 @@ export default function Booking() {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const [d, h, t_data] = await Promise.all([getUmrahDepartures(), getHajjPackage(), getUmrahTiers()]);
+      const [d, h, umrahData, travelData] = await Promise.all([
+        getUmrahDepartures(),
+        getHajjPackage(),
+        getPackageTiers("umrah"),
+        getPackageTiers("travel"),
+      ]);
       if (!mounted) return;
       setDepartures(d as any);
       setHajjPackage(h as any);
-      setUmrahTiers(t_data);
+      setUmrahTiers(umrahData);
+      setTravelTiers(travelData);
 
       const t = params.get("type") as BookingType | null;
       const p = params.get("pkg");
       if (t && SERVICES.some((s) => s.id === t)) { setType(t); setStep(2); }
       if (p) {
-        const tier = t_data.find((x) => x.id === p);
+        const tier = [...umrahData, ...travelData].find((x) => x.id === p);
         const departure = (d as any).find((x: any) => x.id === p);
         if (tier) setPkgId(p);
         else if (departure) setSelectedDepartureId(p);
@@ -98,10 +105,20 @@ export default function Booking() {
           : `${t.duration} · No departure window selected`,
       };
     }
+    if (type === "travel") {
+      const t = travelTiers.find((x) => x.id === pkgId);
+      if (t) {
+        return {
+          label: `Travel — ${t.tier} (${t.stars}★)` ,
+          price: t.price,
+          sub: `${t.duration} · Visa support & trip planning`,
+        };
+      }
+      return { label: "Business, Tourism & Visits", price: 0, sub: "Expert visa guidance and itinerary planning" };
+    }
     if (type === "study") return { label: "Study Abroad Consultation", price: 0, sub: "Free initial consultation" };
-    if (type === "travel") return { label: "Business, Tourism & Visits", price: 0, sub: "Expert visa guidance and itinerary planning" };
     return { label: "Medical Tourism Consultation", price: 0, sub: "Case review and travel planning consultation" };
-  }, [type, pkgId, selectedDepartureId, hajjPackage, selectedDeparture, umrahTiers]);
+  }, [type, pkgId, selectedDepartureId, hajjPackage, selectedDeparture, umrahTiers, travelTiers]);
 
   const next = () => setStep((s) => Math.min(s + 1, 4));
   const back = () => setStep((s) => Math.max(s - 1, 1));
@@ -339,9 +356,41 @@ export default function Booking() {
               )}
 
               {type === "travel" && (
-                <div className="glass-card rounded-sm p-7">
-                  <div className="font-display text-2xl mb-2">Business & Tourism Visas</div>
-                  <p className="text-sm text-muted-foreground">Travelling for business, a holiday, or visiting family? Our experts handle documentation and processing for major global destinations.</p>
+                <div className="space-y-6">
+                  <div className="glass-card rounded-sm p-7">
+                    <div className="font-display text-2xl mb-2">Business & Tourism Visas</div>
+                    <p className="text-sm text-muted-foreground">Travelling for business, a holiday, or visiting family? Our experts handle documentation and processing for major global destinations.</p>
+                  </div>
+
+                  {travelTiers.length > 0 ? (
+                    <div className="space-y-6">
+                      <div className="font-display text-2xl">Choose your travel tier</div>
+                      <div className="grid sm:grid-cols-3 gap-4">
+                        {travelTiers.map((t) => (
+                          <button
+                            key={t.id}
+                            onClick={() => setPkgId(t.id)}
+                            className={cn(
+                              "glass-card rounded-sm p-6 text-left hover:border-gold/60 transition-all",
+                              pkgId === t.id ? "border-gold bg-gold/5 shadow-gold" : "border-border"
+                            )}
+                          >
+                            <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground mb-2">{t.stars}★ · {t.duration}</div>
+                            <div className="font-display text-2xl text-gold mb-1">{t.tier}</div>
+                            <div className="font-display text-xl mb-4">{formatNGN(t.price)}</div>
+                            <ul className="space-y-1">
+                              {t.highlights.map((h) => (
+                                <li key={h} className="text-xs text-muted-foreground flex items-start gap-2">
+                                  <Check className="w-3 h-3 text-gold mt-0.5 shrink-0" /> {h}
+                                </li>
+                              ))}
+                            </ul>
+                            <div className="mt-4 text-xs text-muted-foreground">{t.totalSeats - t.seatsBooked} seats left</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               )}
 

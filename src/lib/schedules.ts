@@ -20,8 +20,11 @@ export type HajjPackage = {
   inclusions?: string[];
 };
 
-export type UmrahTier = {
+export type TierService = "umrah" | "travel";
+
+export type PackageTier = {
   id: string;
+  service: TierService;
   tier: "Economy" | "Luxury" | "Premium" | string;
   stars: number;
   price: number;
@@ -31,6 +34,8 @@ export type UmrahTier = {
   highlights: string[];
   isFeatured: boolean;
 };
+
+export type UmrahTier = PackageTier;
 
 function normalizeUmrahDeparture(row: any): UmrahDeparture {
   return {
@@ -46,12 +51,10 @@ function normalizeUmrahDeparture(row: any): UmrahDeparture {
   };
 }
 
-export async function getUmrahTiers(): Promise<UmrahTier[]> {
-  const { data, error } = await supabase.from("umrah_tiers").select("*").order("price", { ascending: false });
-  if (error) throw error;
-  if (!data) return [];
-  return (data as any[]).map((row) => ({
+function normalizePackageTier(row: any): PackageTier {
+  return {
     id: row.id,
+    service: row.service || "umrah",
     tier: row.tier,
     stars: row.stars,
     price: Number(row.price),
@@ -60,12 +63,20 @@ export async function getUmrahTiers(): Promise<UmrahTier[]> {
     seatsBooked: row.seats_booked || 0,
     highlights: row.highlights || [],
     isFeatured: row.is_featured || false,
-  }));
+  };
 }
 
-export async function upsertUmrahTier(tier: Partial<UmrahTier> & { id: string }) {
+export async function getPackageTiers(service: TierService): Promise<PackageTier[]> {
+  const { data, error } = await supabase.from("umrah_tiers").select("*").eq("service", service).order("price", { ascending: false });
+  if (error) throw error;
+  if (!data) return [];
+  return (data as any[]).map(normalizePackageTier);
+}
+
+export async function upsertPackageTier(tier: Partial<PackageTier> & { id: string }) {
   const payload = {
     id: tier.id,
+    service: tier.service || "umrah",
     tier: tier.tier,
     stars: tier.stars,
     price: tier.price,
@@ -77,19 +88,17 @@ export async function upsertUmrahTier(tier: Partial<UmrahTier> & { id: string })
     updated_at: new Date().toISOString(),
   };
 
-  const { data, error } = await supabase.from("umrah_tiers").upsert(payload).select().single();
+  const { data, error } = await supabase.from("umrah_tiers").upsert(payload, { onConflict: "id" }).select().single();
   if (error) throw error;
-  return {
-    id: data.id,
-    tier: data.tier,
-    stars: data.stars,
-    price: Number(data.price),
-    duration: data.duration,
-    totalSeats: data.total_seats,
-    seatsBooked: data.seats_booked || 0,
-    highlights: data.highlights || [],
-    isFeatured: data.is_featured || false,
-  };
+  return normalizePackageTier(data);
+}
+
+export async function getUmrahTiers(): Promise<UmrahTier[]> {
+  return getPackageTiers("umrah");
+}
+
+export async function upsertUmrahTier(tier: Partial<UmrahTier> & { id: string }) {
+  return upsertPackageTier({ ...tier, service: tier.service ?? "umrah" });
 }
 
 export async function getUmrahDepartures(): Promise<UmrahDeparture[]> {

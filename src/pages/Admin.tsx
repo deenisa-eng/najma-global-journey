@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatNGN } from "@/data/packages";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-import { getUmrahDepartures, upsertUmrahDeparture, deleteUmrahDeparture, getHajjPackage, upsertHajjPackage, getUmrahTiers, upsertUmrahTier, type UmrahTier } from "@/lib/schedules";
+import { getUmrahDepartures, upsertUmrahDeparture, deleteUmrahDeparture, getHajjPackage, upsertHajjPackage, getPackageTiers, upsertPackageTier, type PackageTier, type TierService } from "@/lib/schedules";
 
 type Inquiry = {
   id: string;
@@ -59,9 +59,10 @@ export default function Admin() {
   const [hajjPackage, setHajjPackage] = useState<any>(null);
   const [hajjForm, setHajjForm] = useState({ title: "", departRoute: "", returnRoute: "", departDate: "", returnDate: "", price: "0", seatsLeft: "0" });
   const [hajjLoading, setHajjLoading] = useState(false);
-  
-  const [umrahTiers, setUmrahTiers] = useState<UmrahTier[]>([]);
-  const [editingTier, setEditingTier] = useState<Partial<UmrahTier> | null>(null);
+
+  const [tierService, setTierService] = useState<TierService>("umrah");
+  const [packageTiers, setPackageTiers] = useState<PackageTier[]>([]);
+  const [editingTier, setEditingTier] = useState<Partial<PackageTier> | null>(null);
   const [tierLoading, setTierLoading] = useState(false);
 
   const { user, loading: authLoading } = useAuth();
@@ -81,11 +82,11 @@ export default function Admin() {
     ]);
 
     try {
-      const [d, h, t] = await Promise.all([getUmrahDepartures(), getHajjPackage(), getUmrahTiers()]);
+      const [d, h, t] = await Promise.all([getUmrahDepartures(), getHajjPackage(), getPackageTiers("umrah")]);
       setDepartures(d as any[]);
       setDepartureError(null);
       setHajjPackage(h as any);
-      setUmrahTiers(t);
+      setPackageTiers(t);
       if (h) {
         setHajjForm({
           title: h.title || "",
@@ -624,15 +625,36 @@ export default function Admin() {
   );
 
   function renderTiers() {
+    const serviceLabel = tierService === "umrah" ? "Umrah" : "Travel";
+
     return (
       <div className="space-y-10 animate-fade-in">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl flex items-center gap-3">
-            <Sparkles className="w-6 h-6 text-gold" />
-            Umrah Package Tiers
-          </h2>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-display text-2xl flex items-center gap-3">
+              <Sparkles className="w-6 h-6 text-gold" />
+              {serviceLabel} Package Tiers
+            </h2>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {(["umrah", "travel"] as TierService[]).map((service) => (
+                <Button
+                  key={service}
+                  variant={tierService === service ? "gold" : "outline"}
+                  size="sm"
+                  onClick={async () => {
+                    setTierService(service);
+                    setEditingTier(null);
+                    setPackageTiers(await getPackageTiers(service));
+                  }}
+                >
+                  {service === "umrah" ? "Umrah" : "Travel & Visas"}
+                </Button>
+              ))}
+            </div>
+          </div>
+
           {!editingTier && (
-            <Button onClick={() => setEditingTier({ id: "", tier: "", stars: 4, price: 0, duration: "14 Days", totalSeats: 50, seatsBooked: 0, highlights: [], isFeatured: false })}>
+            <Button onClick={() => setEditingTier({ id: "", service: tierService, tier: "", stars: 4, price: 0, duration: "14 Days", totalSeats: 50, seatsBooked: 0, highlights: [], isFeatured: false })}>
               <Plus className="w-4 h-4 mr-2" /> Add Tier
             </Button>
           )}
@@ -648,6 +670,21 @@ export default function Admin() {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Service</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["umrah", "travel"] as TierService[]).map((service) => (
+                    <Button
+                      key={service}
+                      variant={editingTier.service === service ? "gold" : "outline"}
+                      size="sm"
+                      onClick={() => setEditingTier({ ...editingTier, service })}
+                    >
+                      {service === "umrah" ? "Umrah" : "Travel & Visas"}
+                    </Button>
+                  ))}
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label>Tier Name (e.g. Economy, Luxury)</Label>
                 <Input value={editingTier.tier} onChange={(e) => setEditingTier({ ...editingTier, tier: e.target.value })} />
@@ -704,9 +741,9 @@ export default function Admin() {
                 }
                 setTierLoading(true);
                 try {
-                  await upsertUmrahTier(editingTier as any);
-                  const t = await getUmrahTiers();
-                  setUmrahTiers(t);
+                  await upsertPackageTier(editingTier as any);
+                  const t = await getPackageTiers(editingTier.service || tierService);
+                  setPackageTiers(t);
                   setEditingTier(null);
                   toast.success("Tier saved successfully");
                 } catch (err: any) {
@@ -723,12 +760,15 @@ export default function Admin() {
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {umrahTiers.map((t) => (
+            {packageTiers.map((t) => (
               <div key={t.id} className={cn("glass-card rounded-xl p-6 border-l-4", t.isFeatured ? "border-l-gold shadow-gold" : "border-l-border")}>
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t.stars}★ Package</div>
                     <h3 className="font-display text-2xl text-foreground">{t.tier}</h3>
+                    {t.service !== "umrah" && (
+                      <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground mt-1">{t.service === "travel" ? "Travel & Visas" : t.service}</div>
+                    )}
                   </div>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingTier(t)}>
                     <SettingsIcon className="w-4 h-4" />
@@ -936,7 +976,7 @@ export default function Admin() {
               <p className="text-muted-foreground text-sm max-w-xl">
                 {currentTab === "dashboard" && "Overview of system activity, revenue metrics, and booking registrations."}
                 {currentTab === "departures" && "Manage Umrah schedules and Hajj package configurations."}
-                {currentTab === "tiers" && "Configure Umrah tiers, pricing, and hotel highlights."}
+                {currentTab === "tiers" && "Configure tiers, pricing, and hotel highlights."}
                 {currentTab === "inquiries" && "Review and respond to messages from the website contact form."}
                 {currentTab === "settings" && "Configure your administrator profile and security credentials."}
               </p>

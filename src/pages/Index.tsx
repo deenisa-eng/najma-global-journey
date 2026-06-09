@@ -59,15 +59,15 @@ const Index = () => {
   return (
     <Layout>
       {/* HERO */}
-      <section className="relative min-h-[100svh] flex items-center overflow-hidden pt-20">
+      <section className="relative min-h-[90svh] lg:min-h-[100svh] flex items-center overflow-hidden pt-20">
         <div className="absolute inset-0">
           <img
             src={heroKaaba}
             alt="The Holy Kaaba in Mecca at golden hour"
-            className="w-full h-full object-cover animate-ken-burns"
+            className="w-full h-full object-cover object-center lg:object-[center_35%] animate-ken-burns"
           />
-          <div className="absolute inset-0 bg-gradient-hero" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-background/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-hero sm:bg-gradient-hero" />
+          <div className="absolute inset-0 bg-black/40 sm:bg-transparent lg:bg-gradient-to-r lg:from-background/50 lg:via-background/30 lg:to-transparent" />
         </div>
 
         <div className="container-luxe relative z-10 py-20">
