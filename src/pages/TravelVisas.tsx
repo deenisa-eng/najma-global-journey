@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, Globe2, Briefcase, Camera, Users, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Globe2, Briefcase, Camera, Users, ShieldCheck, Star, RefreshCw, Crown, Gem } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
+import { formatNGN } from "@/data/packages";
+import { getPackageTiers, type PackageTier } from "@/lib/schedules";
 import plane from "@/assets/travel-visas.jpg";
 
 const travelTypes = [
@@ -30,7 +33,29 @@ const highlights = [
   "Personalized travel itineraries"
 ];
 
+const TIER_ICON: Record<string, any> = { Economy: Star, Luxury: Gem, Premium: Crown };
+
 export default function TravelVisas() {
+  const [tiers, setTiers] = useState<PackageTier[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      setLoading(true);
+      try {
+        const data = await getPackageTiers("travel");
+        if (!mounted) return;
+        setTiers(data);
+      } catch (err) {
+        console.error("Error loading travel tiers:", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
   return (
     <Layout>
       <section className="relative pt-32 pb-20 overflow-hidden">
@@ -48,6 +73,114 @@ export default function TravelVisas() {
               Whether you are travelling for business, pleasure, or to visit loved ones, we provide end-to-end visa and travel support to ensure your journey is successful.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Featured Travel Packages */}
+      <section className="py-16">
+        <div className="container-luxe">
+          {loading ? (
+            <div className="py-20 text-center">
+              <RefreshCw className="w-10 h-10 animate-spin mx-auto text-gold/40 mb-4" />
+              <p className="text-muted-foreground">Loading travel packages...</p>
+            </div>
+          ) : tiers.length === 0 ? null : (
+            <>
+              <div className="flex items-end justify-between mb-10">
+                <div>
+                  <div className="eyebrow mb-3">Featured Packages</div>
+                  <h2 className="font-display text-4xl">Travel Tiers & Visas.</h2>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-3 gap-6">
+                {tiers.map((t) => {
+                  const Icon = TIER_ICON[t.tier] || Star;
+                  const pct = Math.round((t.seatsBooked / t.totalSeats) * 100);
+                  const left = t.totalSeats - t.seatsBooked;
+                  const featured = t.isFeatured;
+                  return (
+                    <div
+                      key={t.id}
+                      className={`relative glass-card rounded-sm overflow-hidden flex flex-col transition-all duration-500 hover:border-gold/60 ${featured ? "border-gold/50 shadow-gold" : ""}`}
+                    >
+                      {/* Image header */}
+                      <div className="relative h-56 overflow-hidden">
+                        <img
+                          src={plane}
+                          alt={`Travel ${t.tier} package`}
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+
+                        {/* Top badges */}
+                        <div className="absolute top-4 left-4 flex gap-2">
+                          <span className="bg-gold text-gold-foreground text-[10px] uppercase tracking-[0.22em] px-3 py-1.5 rounded-sm font-semibold">
+                            Travel
+                          </span>
+                          <span className="bg-background/70 backdrop-blur-sm border border-border text-[10px] uppercase tracking-[0.22em] px-3 py-1.5 rounded-sm">
+                            {t.tier}
+                          </span>
+                        </div>
+                        <div className="absolute top-4 right-4 flex items-center gap-1 bg-background/70 backdrop-blur-sm border border-gold/30 px-2.5 py-1.5 rounded-sm">
+                          <Star className="w-3 h-3 fill-gold text-gold" />
+                          <span className="text-[10px] font-semibold tracking-wider">{t.stars}-STAR</span>
+                        </div>
+
+                        {featured && (
+                          <div className="absolute top-16 left-4 bg-gradient-gold text-gold-foreground text-[10px] uppercase tracking-[0.24em] px-3 py-1 rounded-sm font-semibold">
+                            Most Booked
+                          </div>
+                        )}
+
+                        {/* Price overlay bottom-left */}
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <div className="font-display text-3xl text-gold leading-tight">{formatNGN(t.price)}</div>
+                          <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">per person</div>
+                        </div>
+                      </div>
+
+                      {/* Body */}
+                      <div className="p-6 flex flex-col flex-1">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-9 h-9 rounded-sm bg-gold/10 border border-gold/30 flex items-center justify-center">
+                            <Icon className="w-4 h-4 text-gold" />
+                          </div>
+                          <div>
+                            <div className="font-display text-xl leading-none">{t.tier}</div>
+                            <div className="text-xs text-muted-foreground mt-1">{t.duration}</div>
+                          </div>
+                        </div>
+
+                        <ul className="space-y-2 text-sm mb-5 flex-1">
+                          {t.highlights.map((h) => (
+                            <li key={h} className="flex items-start gap-2">
+                              <Check className="w-4 h-4 text-gold mt-0.5 shrink-0" />
+                              <span className="text-foreground/90">{h}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        <div className="mb-5">
+                          <div className="flex justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                            <span>{left} seats left</span>
+                            <span className="text-gold">{t.seatsBooked}/{t.totalSeats} booked</span>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                            <div className="h-full bg-gradient-gold transition-all" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+
+                        <Button asChild variant={featured ? "gold" : "outlineGold"} className="mt-auto w-full">
+                          <Link to={`/booking?type=travel&pkg=${t.id}`}>Book Now <ArrowRight className="w-4 h-4" /></Link>
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </section>
 
