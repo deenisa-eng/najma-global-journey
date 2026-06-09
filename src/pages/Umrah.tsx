@@ -84,50 +84,84 @@ export default function Umrah() {
                 const pct = Math.round((t.seatsBooked / t.totalSeats) * 100);
                 const left = t.totalSeats - t.seatsBooked;
                 const featured = t.isFeatured;
+                const img = TIER_IMAGE[t.tier] || madinah;
                 return (
                   <div
                     key={t.id}
-                    className={`relative glass-card rounded-sm p-7 flex flex-col transition-all duration-500 hover:border-gold/60 ${featured ? "border-gold/50 shadow-gold" : ""}`}
+                    className={`relative glass-card rounded-sm overflow-hidden flex flex-col transition-all duration-500 hover:border-gold/60 ${featured ? "border-gold/50 shadow-gold" : ""}`}
                   >
-                    {featured && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-gold-foreground text-[10px] uppercase tracking-[0.24em] px-4 py-1 rounded-sm font-semibold">
-                        Most Booked
+                    {/* Image header */}
+                    <div className="relative h-56 overflow-hidden">
+                      <img
+                        src={img}
+                        alt={`Umrah ${t.tier} package`}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+
+                      {/* Top badges */}
+                      <div className="absolute top-4 left-4 flex gap-2">
+                        <span className="bg-gold text-gold-foreground text-[10px] uppercase tracking-[0.22em] px-3 py-1.5 rounded-sm font-semibold">
+                          Umrah
+                        </span>
+                        <span className="bg-background/70 backdrop-blur-sm border border-border text-[10px] uppercase tracking-[0.22em] px-3 py-1.5 rounded-sm">
+                          {t.tier}
+                        </span>
                       </div>
-                    )}
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="w-12 h-12 rounded-sm bg-gold/10 border border-gold/30 flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-gold" />
+                      <div className="absolute top-4 right-4 flex items-center gap-1 bg-background/70 backdrop-blur-sm border border-gold/30 px-2.5 py-1.5 rounded-sm">
+                        <Star className="w-3 h-3 fill-gold text-gold" />
+                        <span className="text-[10px] font-semibold tracking-wider">{t.stars}-STAR</span>
                       </div>
-                      <div className="flex gap-0.5 text-gold">
-                        {Array.from({ length: t.stars }).map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-gold" />)}
+
+                      {featured && (
+                        <div className="absolute top-16 left-4 bg-gradient-gold text-gold-foreground text-[10px] uppercase tracking-[0.24em] px-3 py-1 rounded-sm font-semibold">
+                          Most Booked
+                        </div>
+                      )}
+
+                      {/* Price overlay bottom-left */}
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <div className="font-display text-3xl text-gold leading-tight">{formatNGN(t.price)}</div>
+                        <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">per person</div>
                       </div>
                     </div>
-                    <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground mb-1">{t.tier}</div>
-                    <div className="font-display text-4xl text-gold mb-1">{formatNGN(t.price)}</div>
-                    <div className="text-xs text-muted-foreground mb-5">per person · {t.duration}</div>
 
-                    <ul className="space-y-2.5 text-sm mb-6 flex-1">
-                      {t.highlights.map((h) => (
-                        <li key={h} className="flex items-start gap-2">
-                          <Check className="w-4 h-4 text-gold mt-0.5 shrink-0" />
-                          <span className="text-foreground/90">{h}</span>
-                        </li>
-                      ))}
-                    </ul>
+                    {/* Body */}
+                    <div className="p-6 flex flex-col flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-9 h-9 rounded-sm bg-gold/10 border border-gold/30 flex items-center justify-center">
+                          <Icon className="w-4 h-4 text-gold" />
+                        </div>
+                        <div>
+                          <div className="font-display text-xl leading-none">{t.tier}</div>
+                          <div className="text-xs text-muted-foreground mt-1">{t.duration}</div>
+                        </div>
+                      </div>
 
-                    <div className="mb-5">
-                      <div className="flex justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
-                        <span>{left} seats left</span>
-                        <span className="text-gold">{t.seatsBooked}/{t.totalSeats} booked</span>
+                      <ul className="space-y-2 text-sm mb-5 flex-1">
+                        {t.highlights.map((h) => (
+                          <li key={h} className="flex items-start gap-2">
+                            <Check className="w-4 h-4 text-gold mt-0.5 shrink-0" />
+                            <span className="text-foreground/90">{h}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <div className="mb-5">
+                        <div className="flex justify-between text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+                          <span>{left} seats left</span>
+                          <span className="text-gold">{t.seatsBooked}/{t.totalSeats} booked</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                          <div className="h-full bg-gradient-gold transition-all" style={{ width: `${pct}%` }} />
+                        </div>
                       </div>
-                      <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
-                        <div className="h-full bg-gradient-gold transition-all" style={{ width: `${pct}%` }} />
-                      </div>
+
+                      <Button asChild variant={featured ? "gold" : "outlineGold"} className="mt-auto w-full">
+                        <Link to={`/booking?type=umrah&pkg=${t.id}`}>View Details <ArrowRight className="w-4 h-4" /></Link>
+                      </Button>
                     </div>
-
-                    <Button asChild variant={featured ? "gold" : "outlineGold"} className="mt-auto w-full">
-                      <Link to={`/booking?type=umrah&pkg=${t.id}`}>Book This Tier <ArrowRight className="w-4 h-4" /></Link>
-                    </Button>
                   </div>
                 );
               })
