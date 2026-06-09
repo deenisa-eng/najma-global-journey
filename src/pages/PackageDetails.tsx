@@ -1,0 +1,206 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Calendar, Check, MapPin, RefreshCw, Star, Users } from "lucide-react";
+import Layout from "@/components/layout/Layout";
+import { Button } from "@/components/ui/button";
+import { formatDate, formatNGN, UMRAH_INCLUSIONS } from "@/data/packages";
+import { getUmrahDepartures, getUmrahTiers, type UmrahDeparture, type UmrahTier } from "@/lib/schedules";
+import umrahPremium from "@/assets/umrah-premium.jpg";
+import umrahLuxury from "@/assets/umrah-luxury.jpg";
+import umrahEconomy from "@/assets/umrah-economy.jpg";
+import madinah from "@/assets/madinah.jpg";
+
+const TIER_IMAGE: Record<string, string> = {
+  Premium: umrahPremium,
+  Luxury: umrahLuxury,
+  Economy: umrahEconomy,
+};
+
+const TIER_DESCRIPTION: Record<string, string> = {
+  Premium:
+    "An Umrah Premium package is designed for pilgrims who want to prioritize comfort, convenience, and privacy. Ideal for the elderly, families with young children, or anyone seeking a seamless, stress-free journey so they can focus entirely on their worship.",
+  Luxury:
+    "Our Luxury Umrah package balances refined comfort with thoughtful access — 5-star hotels within walking distance of the Haram, attentive service, and a dedicated scholar to guide the rites at every step.",
+  Economy:
+    "The Economy Umrah package delivers everything required for a meaningful pilgrimage — central 4-star accommodation, smooth visa processing, and reliable group transfers — at a graceful, accessible price point.",
+};
+
+export default function PackageDetails() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [tier, setTier] = useState<UmrahTier | null>(null);
+  const [departures, setDepartures] = useState<UmrahDeparture[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      setLoading(true);
+      try {
+        const [tiers, deps] = await Promise.all([getUmrahTiers(), getUmrahDepartures()]);
+        if (!mounted) return;
+        setTier(tiers.find((t) => t.id === id) || null);
+        setDepartures(deps);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [id]);
+
+  const next = useMemo(() => {
+    const now = Date.now();
+    return departures.find((d) => new Date(d.depart).getTime() >= now) || departures[0];
+  }, [departures]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="pt-40 pb-32 text-center">
+          <RefreshCw className="w-10 h-10 animate-spin mx-auto text-gold/40 mb-4" />
+          <p className="text-muted-foreground">Loading package…</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!tier) {
+    return (
+      <Layout>
+        <div className="container-luxe pt-40 pb-32 text-center">
+          <h1 className="font-display text-4xl mb-4">Package not found</h1>
+          <Button asChild variant="outlineGold"><Link to="/umrah">Back to packages</Link></Button>
+        </div>
+      </Layout>
+    );
+  }
+
+  const img = TIER_IMAGE[tier.tier] || madinah;
+  const pct = Math.round((tier.seatsBooked / tier.totalSeats) * 100);
+  const left = tier.totalSeats - tier.seatsBooked;
+  const deposit = Math.round(tier.price * 0.4);
+  const description = TIER_DESCRIPTION[tier.tier] || `Our ${tier.tier} Umrah package is crafted for a truly memorable pilgrimage.`;
+
+  return (
+    <Layout>
+      {/* Hero */}
+      <section className="relative pt-32 pb-20 overflow-hidden">
+        <div className="absolute inset-0">
+          <img src={img} alt={`Umrah ${tier.tier}`} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/55 to-background/20" />
+        </div>
+        <div className="container-luxe relative">
+          <button
+            onClick={() => navigate("/umrah")}
+            className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground hover:text-gold transition-colors mb-8"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> All Packages
+          </button>
+          <div className="max-w-2xl animate-fade-in-up">
+            <span className="inline-block bg-gold text-gold-foreground text-[10px] uppercase tracking-[0.24em] px-3 py-1.5 rounded-sm font-semibold mb-5">
+              Umrah
+            </span>
+            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl leading-tight mb-6">
+              {tier.tier}
+            </h1>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-foreground/90">
+              <span className="inline-flex items-center gap-2">
+                <Star className="w-4 h-4 text-gold fill-gold" /> {tier.stars} Star
+              </span>
+              <span className="text-border">|</span>
+              <span className="inline-flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-gold" /> {tier.duration}
+              </span>
+              <span className="text-border">|</span>
+              <span className="inline-flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-gold" /> Mecca & Medina
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Content + sticky sidebar */}
+      <section className="py-16">
+        <div className="container-luxe grid lg:grid-cols-[1fr_380px] gap-12">
+          <div className="space-y-14">
+            <div>
+              <h2 className="font-display text-3xl text-gold mb-5">About This Package</h2>
+              <p className="text-foreground/85 leading-relaxed max-w-2xl">{description}</p>
+            </div>
+
+            <div>
+              <h2 className="font-display text-3xl text-gold mb-6">What's Included</h2>
+              <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
+                {[...tier.highlights, ...UMRAH_INCLUSIONS].slice(0, 8).map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-sm">
+                    <span className="w-5 h-5 rounded-full bg-gold/15 border border-gold/40 flex items-center justify-center mt-0.5 shrink-0">
+                      <Check className="w-3 h-3 text-gold" />
+                    </span>
+                    <span className="text-foreground/90">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {next && (
+              <div>
+                <h2 className="font-display text-3xl text-gold mb-6">Schedule</h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="glass-card rounded-sm p-6 text-center">
+                    <Calendar className="w-6 h-6 text-gold mx-auto mb-3" />
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground mb-2">Departure</div>
+                    <div className="font-display text-xl">{formatDate(next.depart)}</div>
+                  </div>
+                  <div className="glass-card rounded-sm p-6 text-center">
+                    <Calendar className="w-6 h-6 text-gold mx-auto mb-3" />
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground mb-2">Return</div>
+                    <div className="font-display text-xl">{formatDate(next.ret)}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sticky pricing sidebar */}
+          <aside className="lg:sticky lg:top-32 self-start">
+            <div className="glass-card rounded-sm p-7 border-gold/30">
+              <div className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground mb-2">Total Price</div>
+              <div className="font-display text-5xl text-gold leading-none mb-3">{formatNGN(tier.price)}</div>
+              <div className="text-xs text-muted-foreground mb-6">
+                Required Deposit: <span className="text-foreground/90">{formatNGN(deposit)}</span>
+              </div>
+
+              <div className="border-t border-border pt-5 mb-5 flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Duration</span>
+                <span className="text-sm font-medium">{tier.duration}</span>
+              </div>
+
+              <div className="border-t border-border pt-5 mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">Availability</span>
+                  <span className="inline-flex items-center gap-1.5 text-xs text-gold">
+                    <Users className="w-3.5 h-3.5" /> {left} spots left
+                  </span>
+                </div>
+                <div className="h-1.5 rounded-full bg-secondary overflow-hidden mb-2">
+                  <div className="h-full bg-gradient-gold transition-all" style={{ width: `${pct}%` }} />
+                </div>
+                <div className="text-[11px] text-muted-foreground">
+                  {tier.seatsBooked} of {tier.totalSeats} seats booked
+                </div>
+              </div>
+
+              <Button asChild variant="gold" size="lg" className="w-full">
+                <Link to={`/booking?type=umrah&pkg=${tier.id}`}>Book Now</Link>
+              </Button>
+              <p className="text-[11px] text-center text-muted-foreground mt-4">
+                Need help? Contact us on WhatsApp for assistance.
+              </p>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </Layout>
+  );
+}

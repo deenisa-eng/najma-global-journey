@@ -159,7 +159,7 @@ export default function Umrah() {
                       </div>
 
                       <Button asChild variant={featured ? "gold" : "outlineGold"} className="mt-auto w-full">
-                        <Link to={`/booking?type=umrah&pkg=${t.id}`}>View Details <ArrowRight className="w-4 h-4" /></Link>
+                        <Link to={`/packages/umrah/${t.id}`}>View Details <ArrowRight className="w-4 h-4" /></Link>
                       </Button>
                     </div>
                   </div>
