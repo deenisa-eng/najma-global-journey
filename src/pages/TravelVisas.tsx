@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, Globe2, Briefcase, Camera, Users, ShieldCheck, Star, RefreshCw, Crown, Gem } from "lucide-react";
+import { ArrowRight, Check, Briefcase, Camera, Users, ShieldCheck, Star, RefreshCw, Crown, Gem } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { formatNGN } from "@/data/packages";
@@ -74,70 +74,6 @@ export default function TravelVisas() {
             <p className="text-lg text-muted-foreground max-w-2xl">
               Whether you are travelling for business, pleasure, or to visit loved ones, we provide end-to-end visa and travel support to ensure your journey is successful.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Schedule - Travel departures */}
-      <section className="py-20 bg-gradient-navy">
-        <div className="container-luxe">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-            <div>
-              <div className="eyebrow mb-3">Departures</div>
-              <h2 className="font-display text-4xl sm:text-5xl">Choose your departure window.</h2>
-            </div>
-            <div className="text-sm text-muted-foreground">All travel departures configured by admin.</div>
-          </div>
-
-          <div className="hidden md:block glass-card rounded-sm overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="text-left text-[11px] uppercase tracking-[0.22em] text-muted-foreground border-b border-border">
-                  <th className="px-6 py-5">Window</th>
-                  <th className="px-6 py-5">Departure</th>
-                  <th className="px-6 py-5">Return</th>
-                  <th className="px-6 py-5">Seats</th>
-                  <th className="px-6 py-5"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {departures.map((d) => (
-                  <tr key={d.id} className="border-b border-border/50 hover:bg-secondary/40 transition-colors">
-                    <td className="px-6 py-5 font-display text-lg text-gold">{d.label}</td>
-                    <td className="px-6 py-5 text-sm">{new Date(d.depart).toLocaleDateString()}</td>
-                    <td className="px-6 py-5 text-sm">{new Date(d.ret).toLocaleDateString()}</td>
-                    <td className="px-6 py-5 text-sm">
-                      <span className={d.seatsLeft <= 5 ? "text-gold" : "text-muted-foreground"}>{d.seatsLeft} left</span>
-                    </td>
-                    <td className="px-6 py-5">
-                      <Button asChild variant="outlineGold" size="sm">
-                        <Link to={`/booking?type=travel&pkg=${d.id}`}>Book <ArrowRight className="w-3 h-3" /></Link>
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="md:hidden grid gap-4">
-            {departures.map((d) => (
-              <div key={d.id} className="glass-card rounded-sm p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="font-display text-2xl text-gold">{d.label}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{d.seatsLeft} seats left</div>
-                  </div>
-                </div>
-                <div className="space-y-2 text-sm mb-5">
-                  <div className="flex justify-between"><span className="text-muted-foreground">Depart</span><span>{new Date(d.depart).toLocaleDateString()}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Return</span><span>{new Date(d.ret).toLocaleDateString()}</span></div>
-                </div>
-                <Button asChild variant="gold" className="w-full">
-                  <Link to={`/booking?type=travel&pkg=${d.id}`}>Book This Departure</Link>
-                </Button>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -238,7 +174,7 @@ export default function TravelVisas() {
                         </div>
 
                         <Button asChild variant={featured ? "gold" : "outlineGold"} className="mt-auto w-full">
-                          <Link to={`/booking?type=travel&pkg=${t.id}`}>Book Now <ArrowRight className="w-4 h-4" /></Link>
+                          <Link to={`/packages/travel/${t.id}`}>View Details <ArrowRight className="w-4 h-4" /></Link>
                         </Button>
                       </div>
                     </div>
@@ -247,6 +183,72 @@ export default function TravelVisas() {
               </div>
             </>
           )}
+        </div>
+      </section>
+
+      {/* Schedule - Travel departures */}
+      <section className="py-20 bg-gradient-navy">
+        <div className="container-luxe">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+              <div className="eyebrow mb-3">Departures</div>
+              <h2 className="font-display text-4xl sm:text-5xl">Choose your departure window.</h2>
+            </div>
+          </div>
+
+          <div className="hidden md:block glass-card rounded-sm overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left text-[11px] uppercase tracking-[0.22em] text-muted-foreground border-b border-border">
+                  <th className="px-6 py-5">Window</th>
+                  <th className="px-6 py-5">Departure</th>
+                  <th className="px-6 py-5">Return</th>
+                  <th className="px-6 py-5">From</th>
+                  <th className="px-6 py-5">Seats</th>
+                  <th className="px-6 py-5"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {departures.map((d) => (
+                  <tr key={d.id} className="border-b border-border/50 hover:bg-secondary/40 transition-colors">
+                    <td className="px-6 py-5 font-display text-lg text-gold">{d.label}</td>
+                    <td className="px-6 py-5 text-sm">{new Date(d.depart).toLocaleDateString()}</td>
+                    <td className="px-6 py-5 text-sm">{new Date(d.ret).toLocaleDateString()}</td>
+                    <td className="px-6 py-5 text-sm font-medium">{d.departureCity}</td>
+                    <td className="px-6 py-5 text-sm">
+                      <span className={d.seatsLeft <= 5 ? "text-gold" : "text-muted-foreground"}>{d.seatsLeft} left</span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <Button asChild variant="outlineGold" size="sm">
+                        <Link to={`/booking?type=travel&pkg=${d.id}`}>Book <ArrowRight className="w-3 h-3" /></Link>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="md:hidden grid gap-4">
+            {departures.map((d) => (
+              <div key={d.id} className="glass-card rounded-sm p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="font-display text-2xl text-gold">{d.label}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{d.seatsLeft} seats left</div>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm mb-5">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Depart</span><span>{new Date(d.depart).toLocaleDateString()}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Return</span><span>{new Date(d.ret).toLocaleDateString()}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">From</span><span className="text-gold">{d.departureCity}</span></div>
+                </div>
+                <Button asChild variant="gold" className="w-full">
+                  <Link to={`/booking?type=travel&pkg=${d.id}`}>Book This Departure</Link>
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

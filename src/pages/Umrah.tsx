@@ -199,10 +199,10 @@ export default function Umrah() {
         <div className="container-luxe">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
             <div>
-              <div className="eyebrow mb-3">2026 Schedule</div>
+              <div className="eyebrow mb-3">Departures</div>
               <h2 className="font-display text-4xl sm:text-5xl">Choose your departure window.</h2>
             </div>
-            <div className="text-sm text-muted-foreground">All departures from <span className="text-foreground">Kano (KAN) → Jeddah (JED)</span></div>
+
           </div>
 
           <div className="hidden md:block glass-card rounded-sm overflow-hidden">
@@ -223,7 +223,7 @@ export default function Umrah() {
                     <td className="px-6 py-5 font-display text-lg text-gold">{d.label}</td>
                     <td className="px-6 py-5 text-sm">{formatDate(d.depart)}</td>
                     <td className="px-6 py-5 text-sm">{formatDate(d.ret)}</td>
-                    <td className="px-6 py-5 text-sm font-medium">{formatNGN(UMRAH_PRICE)}</td>
+                    <td className="px-6 py-5 text-sm font-medium">{d.departureCity}</td>
                     <td className="px-6 py-5 text-sm">
                       <span className={d.seatsLeft <= 5 ? "text-gold" : "text-muted-foreground"}>{d.seatsLeft} left</span>
                     </td>
@@ -251,7 +251,7 @@ export default function Umrah() {
                 <div className="space-y-2 text-sm mb-5">
                   <div className="flex justify-between"><span className="text-muted-foreground">Depart</span><span>{formatDate(d.depart)}</span></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Return</span><span>{formatDate(d.ret)}</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">From</span><span className="text-gold">{formatNGN(UMRAH_PRICE)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">From</span><span className="text-gold">{d.departureCity}</span></div>
                 </div>
                 <Button asChild variant="gold" className="w-full">
                   <Link to={`/booking?type=umrah&pkg=${d.id}`}>Book This Departure</Link>

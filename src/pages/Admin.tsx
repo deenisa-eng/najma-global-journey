@@ -56,9 +56,9 @@ export default function Admin() {
   const [travelDepartures, setTravelDepartures] = useState<any[]>([]);
   const [businessDepartures, setBusinessDepartures] = useState<any[]>([]);
   const [departureError, setDepartureError] = useState<string | null>(null);
-  const [depForm, setDepForm] = useState({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" });
-  const [travelDepForm, setTravelDepForm] = useState({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" });
-  const [businessDepForm, setBusinessDepForm] = useState({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" });
+  const [depForm, setDepForm] = useState({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Kano (KAN)" });
+  const [travelDepForm, setTravelDepForm] = useState({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" });
+  const [businessDepForm, setBusinessDepForm] = useState({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" });
   const [depLoading, setDepLoading] = useState(false);
   const [travelDepLoading, setTravelDepLoading] = useState(false);
   const [businessDepLoading, setBusinessDepLoading] = useState(false);
@@ -433,7 +433,7 @@ export default function Admin() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-2xl">Umrah Departures</h2>
-            <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase tracking-widest" onClick={() => setDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" })}>
+            <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase tracking-widest" onClick={() => setDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Kano (KAN)" })}>
               New Departure
             </Button>
           </div>
@@ -471,6 +471,7 @@ export default function Admin() {
                             depart: d.depart,
                             ret: d.ret,
                             seatsLeft: String(d.seatsLeft ?? 0),
+                            departureCity: d.departureCity || "Kano (KAN)",
                           });
                         }}>
                           <SettingsIcon className="w-3.5 h-3.5" />
@@ -507,6 +508,15 @@ export default function Admin() {
                   value={depForm.label}
                   onChange={(e) => setDepForm((s) => ({ ...s, label: e.target.value }))}
                   placeholder="e.g. Ramadan Special 2026"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dep-city" className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Departure City</Label>
+                <Input
+                  id="dep-city"
+                  value={depForm.departureCity}
+                  onChange={(e) => setDepForm((s) => ({ ...s, departureCity: e.target.value }))}
+                  placeholder="e.g. Kano (KAN)"
                 />
               </div>
               <div className="space-y-2">
@@ -552,11 +562,12 @@ export default function Admin() {
                   depart: depForm.depart,
                   ret: depForm.ret,
                   seatsLeft: Number(depForm.seatsLeft),
+                  departureCity: depForm.departureCity,
                 };
                 await upsertUmrahDeparture(payload as any);
                 const d2 = await getUmrahDepartures();
                 setDepartures(d2 as any[]);
-                setDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" });
+                setDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Kano (KAN)" });
                 setDepLoading(false);
                 toast.success(depForm.id ? "Departure updated" : "Departure added");
               }} disabled={depLoading}>
@@ -564,7 +575,7 @@ export default function Admin() {
                 {depForm.id ? "Save Changes" : "Create Departure"}
               </Button>
               {depForm.id && (
-                <Button variant="outline" onClick={() => setDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" })}>
+                <Button variant="outline" onClick={() => setDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Kano (KAN)" })}>
                   Cancel
                 </Button>
               )}
@@ -576,7 +587,7 @@ export default function Admin() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-2xl">Travel Departures</h2>
-            <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase tracking-widest" onClick={() => setTravelDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" })}>
+            <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase tracking-widest" onClick={() => setTravelDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" })}>
               New Departure
             </Button>
           </div>
@@ -608,7 +619,7 @@ export default function Admin() {
                       </div>
                       <div className="flex gap-1">
                         <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
-                          setTravelDepForm({ id: d.id, label: d.label || "", depart: d.depart, ret: d.ret, seatsLeft: String(d.seatsLeft ?? 0) });
+                          setTravelDepForm({ id: d.id, label: d.label || "", depart: d.depart, ret: d.ret, seatsLeft: String(d.seatsLeft ?? 0), departureCity: d.departureCity || "Lagos (LOS)" });
                         }}>
                           <SettingsIcon className="w-3.5 h-3.5" />
                         </Button>
@@ -642,6 +653,10 @@ export default function Admin() {
                 <Input value={travelDepForm.label} onChange={(e) => setTravelDepForm((s) => ({ ...s, label: e.target.value }))} placeholder="e.g. Business Trip June" />
               </div>
               <div className="space-y-2">
+                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Departure City</Label>
+                <Input value={travelDepForm.departureCity} onChange={(e) => setTravelDepForm((s) => ({ ...s, departureCity: e.target.value }))} placeholder="e.g. Lagos (LOS)" />
+              </div>
+              <div className="space-y-2">
                 <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Available Seats</Label>
                 <Input type="number" min="0" value={travelDepForm.seatsLeft} onChange={(e) => setTravelDepForm((s) => ({ ...s, seatsLeft: e.target.value }))} placeholder="Seats" />
               </div>
@@ -661,11 +676,11 @@ export default function Admin() {
                   return;
                 }
                 setTravelDepLoading(true);
-                const payload = { id: travelDepForm.id || undefined, label: travelDepForm.label, depart: travelDepForm.depart, ret: travelDepForm.ret, seatsLeft: Number(travelDepForm.seatsLeft) };
+                const payload = { id: travelDepForm.id || undefined, label: travelDepForm.label, depart: travelDepForm.depart, ret: travelDepForm.ret, seatsLeft: Number(travelDepForm.seatsLeft), departureCity: travelDepForm.departureCity };
                 await upsertTravelDeparture(payload as any);
                 const t2 = await getTravelDepartures();
                 setTravelDepartures(t2 as any[]);
-                setTravelDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" });
+                setTravelDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" });
                 setTravelDepLoading(false);
                 toast.success(travelDepForm.id ? "Departure updated" : "Departure added");
               }} disabled={travelDepLoading}>
@@ -673,7 +688,7 @@ export default function Admin() {
                 {travelDepForm.id ? "Save Changes" : "Create Departure"}
               </Button>
               {travelDepForm.id && (
-                <Button variant="outline" onClick={() => setTravelDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" })}>
+                <Button variant="outline" onClick={() => setTravelDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" })}>
                   Cancel
                 </Button>
               )}
@@ -685,7 +700,7 @@ export default function Admin() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-2xl">Business Departures</h2>
-            <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase tracking-widest" onClick={() => setBusinessDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" })}>
+            <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase tracking-widest" onClick={() => setBusinessDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" })}>
               New Departure
             </Button>
           </div>
@@ -717,7 +732,7 @@ export default function Admin() {
                       </div>
                       <div className="flex gap-1">
                         <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
-                          setBusinessDepForm({ id: d.id, label: d.label || "", depart: d.depart, ret: d.ret, seatsLeft: String(d.seatsLeft ?? 0) });
+                          setBusinessDepForm({ id: d.id, label: d.label || "", depart: d.depart, ret: d.ret, seatsLeft: String(d.seatsLeft ?? 0), departureCity: d.departureCity || "Lagos (LOS)" });
                         }}>
                           <SettingsIcon className="w-3.5 h-3.5" />
                         </Button>
@@ -751,6 +766,10 @@ export default function Admin() {
                 <Input value={businessDepForm.label} onChange={(e) => setBusinessDepForm((s) => ({ ...s, label: e.target.value }))} placeholder="e.g. Corporate Retreat" />
               </div>
               <div className="space-y-2">
+                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Departure City</Label>
+                <Input value={businessDepForm.departureCity} onChange={(e) => setBusinessDepForm((s) => ({ ...s, departureCity: e.target.value }))} placeholder="e.g. Lagos (LOS)" />
+              </div>
+              <div className="space-y-2">
                 <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Available Seats</Label>
                 <Input type="number" min="0" value={businessDepForm.seatsLeft} onChange={(e) => setBusinessDepForm((s) => ({ ...s, seatsLeft: e.target.value }))} placeholder="Seats" />
               </div>
@@ -770,11 +789,11 @@ export default function Admin() {
                   return;
                 }
                 setBusinessDepLoading(true);
-                const payload = { id: businessDepForm.id || undefined, label: businessDepForm.label, depart: businessDepForm.depart, ret: businessDepForm.ret, seatsLeft: Number(businessDepForm.seatsLeft) };
+                const payload = { id: businessDepForm.id || undefined, label: businessDepForm.label, depart: businessDepForm.depart, ret: businessDepForm.ret, seatsLeft: Number(businessDepForm.seatsLeft), departureCity: businessDepForm.departureCity };
                 await upsertBusinessDeparture(payload as any);
                 const b2 = await getBusinessDepartures();
                 setBusinessDepartures(b2 as any[]);
-                setBusinessDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" });
+                setBusinessDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" });
                 setBusinessDepLoading(false);
                 toast.success(businessDepForm.id ? "Departure updated" : "Departure added");
               }} disabled={businessDepLoading}>
@@ -782,7 +801,7 @@ export default function Admin() {
                 {businessDepForm.id ? "Save Changes" : "Create Departure"}
               </Button>
               {businessDepForm.id && (
-                <Button variant="outline" onClick={() => setBusinessDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0" })}>
+                <Button variant="outline" onClick={() => setBusinessDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" })}>
                   Cancel
                 </Button>
               )}

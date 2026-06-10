@@ -1,6 +1,6 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X, LogOut, LayoutDashboard, Calendar, MessageSquare, Settings, Sparkles } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import najmaLogo from "@/assets/najma.png";
@@ -9,11 +9,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 
 const adminLinks = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/admin/departures", label: "Manage Departures", icon: Calendar },
-  { to: "/admin/tiers", label: "Manage Tiers", icon: Sparkles },
-  { to: "/admin/inquiries", label: "Contact Inquiries", icon: MessageSquare, badge: true },
-  { to: "/admin/settings", label: "Settings", icon: Settings },
+  { to: "/admin", label: "Dashboard" },
+  { to: "/admin/departures", label: "Departures" },
+  { to: "/admin/tiers", label: "Tiers" },
+  { to: "/admin/inquiries", label: "Inquiries", badge: true },
+  { to: "/admin/settings", label: "Settings" },
 ];
 
 export default function AdminHeader() {
@@ -93,15 +93,14 @@ export default function AdminHeader() {
               end={l.to === "/admin"}
               className={({ isActive }) =>
                 cn(
-                  "luxe-link text-sm tracking-wide transition-colors flex items-center gap-2",
+                  "luxe-link text-sm tracking-wide transition-colors flex items-center gap-1.5",
                   isActive ? "text-gold" : "text-foreground/80 hover:text-foreground"
                 )
               }
             >
-              <l.icon className="w-4 h-4" />
               {l.label}
               {l.badge && unreadCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full min-w-[1.2rem] text-center">
+                <span className="px-1.5 py-0.5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full min-w-[1.2rem] text-center">
                   {unreadCount}
                 </span>
               )}

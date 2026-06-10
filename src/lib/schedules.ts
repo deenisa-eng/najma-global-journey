@@ -6,6 +6,7 @@ export type UmrahDeparture = {
   depart: string; // ISO
   ret: string; // ISO
   seatsLeft: number;
+  departureCity: string;
 };
 
 export type TravelDeparture = UmrahDeparture;
@@ -52,6 +53,7 @@ function normalizeUmrahDeparture(row: any): UmrahDeparture {
       : Number.isFinite(row.seatsleft)
       ? row.seatsleft
       : 0,
+    departureCity: row.departure_city || row.departureCity || 'Kano (KAN)',
   };
 }
 
@@ -136,13 +138,14 @@ export async function upsertUmrahDeparture(dep: Partial<UmrahDeparture> & { id?:
     depart: dep.depart ?? new Date().toISOString().split("T")[0],
     ret: dep.ret ?? new Date().toISOString().split("T")[0],
     seatsleft: Number.isFinite(seatsLeft) ? seatsLeft : 0,
+    departure_city: dep.departureCity ?? "Kano (KAN)",
   };
   try {
     const { data, error } = await supabase.from("umrah_departures").upsert(payload, { onConflict: "id" }).select().maybeSingle();
     if (error) throw error;
     return normalizeUmrahDeparture(data);
   } catch (err) {
-    return { ...payload, seatsLeft: payload.seatsleft } as UmrahDeparture;
+    return { ...payload, seatsLeft: payload.seatsleft, departureCity: payload.departure_city } as UmrahDeparture;
   }
 }
 
@@ -154,13 +157,14 @@ export async function upsertTravelDeparture(dep: Partial<TravelDeparture> & { id
     depart: dep.depart ?? new Date().toISOString().split("T")[0],
     ret: dep.ret ?? new Date().toISOString().split("T")[0],
     seatsleft: Number.isFinite(seatsLeft) ? seatsLeft : 0,
+    departure_city: dep.departureCity ?? "Lagos (LOS)",
   };
   try {
     const { data, error } = await supabase.from("travel_departures").upsert(payload, { onConflict: "id" }).select().maybeSingle();
     if (error) throw error;
     return normalizeUmrahDeparture(data);
   } catch (err) {
-    return { ...payload, seatsLeft: payload.seatsleft } as TravelDeparture;
+    return { ...payload, seatsLeft: payload.seatsleft, departureCity: payload.departure_city } as TravelDeparture;
   }
 }
 
@@ -172,13 +176,14 @@ export async function upsertBusinessDeparture(dep: Partial<BusinessDeparture> & 
     depart: dep.depart ?? new Date().toISOString().split("T")[0],
     ret: dep.ret ?? new Date().toISOString().split("T")[0],
     seatsleft: Number.isFinite(seatsLeft) ? seatsLeft : 0,
+    departure_city: dep.departureCity ?? "Lagos (LOS)",
   };
   try {
     const { data, error } = await supabase.from("business_departures").upsert(payload, { onConflict: "id" }).select().maybeSingle();
     if (error) throw error;
     return normalizeUmrahDeparture(data);
   } catch (err) {
-    return { ...payload, seatsLeft: payload.seatsleft } as BusinessDeparture;
+    return { ...payload, seatsLeft: payload.seatsleft, departureCity: payload.departure_city } as BusinessDeparture;
   }
 }
 

@@ -36,23 +36,100 @@ export default function Booking() {
   const [params] = useSearchParams();
   const [step, setStep] = useState(1);
   const [type, setType] = useState<BookingType | null>(null);
-  const [pkgId, setPkgId] = useState<string | null>(null);
-  const [selectedDepartureId, setSelectedDepartureId] = useState<string | null>(null);
   const { user } = useAuth();
-  const [details, setDetails] = useState({ fullName: "", email: "", phone: "", notes: "" });
+  
+  // Separate state for each service type
+  const [umrahDetails, setUmrahDetails] = useState({ fullName: "", email: "", phone: "", notes: "" });
+  const [hajjDetails, setHajjDetails] = useState({ fullName: "", email: "", phone: "", notes: "" });
+  const [travelDetails, setTravelDetails] = useState({ fullName: "", email: "", phone: "", notes: "" });
+  const [studyDetails, setStudyDetails] = useState({ fullName: "", email: "", phone: "", notes: "" });
+  const [medicalDetails, setMedicalDetails] = useState({ fullName: "", email: "", phone: "", notes: "" });
+  
+  // Separate selections for each service type
+  const [umrahPkgId, setUmrahPkgId] = useState<string | null>(null);
+  const [umrahDepartureId, setUmrahDepartureId] = useState<string | null>(null);
+  const [travelPkgId, setTravelPkgId] = useState<string | null>(null);
+  const [travelDepartureId, setTravelDepartureId] = useState<string | null>(null);
+  const [hajjPkgId, setHajjPkgId] = useState<string | null>(null);
+  
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [confirmedId, setConfirmedId] = useState<string | null>(null);
   const [automation, setAutomation] = useState<AutomationResponse | null>(null);
-  const [departures, setDepartures] = useState<any[]>([]);
+  const [umrahDepartures, setUmrahDepartures] = useState<any[]>([]);
+  const [travelDepartures, setTravelDepartures] = useState<any[]>([]);
   const [hajjPackage, setHajjPackage] = useState<any>(null);
   const [umrahTiers, setUmrahTiers] = useState<PackageTier[]>([]);
   const [travelTiers, setTravelTiers] = useState<PackageTier[]>([]);
 
+  // Get current details based on booking type
+  const details = (() => {
+    switch (type) {
+      case "umrah": return umrahDetails;
+      case "hajj": return hajjDetails;
+      case "travel": return travelDetails;
+      case "study": return studyDetails;
+      case "medical": return medicalDetails;
+      default: return { fullName: "", email: "", phone: "", notes: "" };
+    }
+  })();
+
+  // Set current details based on booking type
+  const setDetails = (value: typeof umrahDetails | ((prev: typeof umrahDetails) => typeof umrahDetails)) => {
+    const newValue = typeof value === "function" ? value(details) : value;
+    switch (type) {
+      case "umrah": return setUmrahDetails(newValue);
+      case "hajj": return setHajjDetails(newValue);
+      case "travel": return setTravelDetails(newValue);
+      case "study": return setStudyDetails(newValue);
+      case "medical": return setMedicalDetails(newValue);
+    }
+  };
+
+  // Get current pkgId and selectedDepartureId based on booking type
+  const pkgId = (() => {
+    switch (type) {
+      case "umrah": return umrahPkgId;
+      case "travel": return travelPkgId;
+      case "hajj": return hajjPkgId;
+      default: return null;
+    }
+  })();
+
+  const selectedDepartureId = (() => {
+    switch (type) {
+      case "umrah": return umrahDepartureId;
+      case "travel": return travelDepartureId;
+      default: return null;
+    }
+  })();
+
+  // Set current pkgId based on booking type
+  const setPkgId = (id: string | null) => {
+    switch (type) {
+      case "umrah": return setUmrahPkgId(id);
+      case "travel": return setTravelPkgId(id);
+      case "hajj": return setHajjPkgId(id);
+    }
+  };
+
+  // Set current selectedDepartureId based on booking type
+  const setSelectedDepartureId = (id: string | null) => {
+    switch (type) {
+      case "umrah": return setUmrahDepartureId(id);
+      case "travel": return setTravelDepartureId(id);
+    }
+  };
+
   useEffect(() => {
     if (user?.email) {
-      setDetails((prev) => ({ ...prev, email: user.email }));
+      setUmrahDetails((prev) => ({ ...prev, email: user.email }));
+      setHajjDetails((prev) => ({ ...prev, email: user.email }));
+      setTravelDetails((prev) => ({ ...prev, email: user.email }));
+      setStudyDetails((prev) => ({ ...prev, email: user.email }));
+      setMedicalDetails((prev) => ({ ...prev, email: user.email }));
     }
   }, [user?.email]);
+
 
   // Prefill from query string
   useEffect(() => {
@@ -66,8 +143,8 @@ export default function Booking() {
           getTravelDepartures(),
         ]);
       if (!mounted) return;
-        // combine umrah + travel departures so booking can pick either
-        setDepartures([...(d as any[]), ...(travelDeps as any[])]);
+        setUmrahDepartures(d as any[]);
+        setTravelDepartures(travelDeps as any[]);
       setHajjPackage(h as any);
       setUmrahTiers(umrahData);
       setTravelTiers(travelData);
@@ -83,10 +160,13 @@ export default function Booking() {
       }
     })();
     return () => { mounted = false; };
-  }, []); // eslint-disable-line
+  }, []);
+
+  // Filter departures based on booking type
+  const filteredDepartures = type === "umrah" ? umrahDepartures : type === "travel" ? travelDepartures : [];
 
   const selectedDeparture = selectedDepartureId
-    ? departures.find((x) => x.id === selectedDepartureId)
+    ? filteredDepartures.find((x) => x.id === selectedDepartureId)
     : null;
 
   const summary = useMemo(() => {
@@ -282,12 +362,12 @@ export default function Booking() {
                       )}
                     </div>
                     <div className="grid sm:grid-cols-3 gap-3">
-                      {departures.length === 0 ? (
+                      {filteredDepartures.length === 0 ? (
                         <div className="sm:col-span-3 p-12 text-center text-muted-foreground border border-dashed rounded-sm">
                           No scheduled departures available. Please contact us for custom arrangements.
                         </div>
                       ) : (
-                        departures.map((d) => (
+                        filteredDepartures.map((d) => (
                           <button
                             key={d.id}
                             type="button"
@@ -364,6 +444,44 @@ export default function Booking() {
                     <p className="text-sm text-muted-foreground">Travelling for business, a holiday, or visiting family? Our experts handle documentation and processing for major global destinations.</p>
                   </div>
 
+                  <div className="glass-card rounded-sm p-6 border border-border">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                      <div>
+                        <div className="font-display text-2xl">Choose your departure window</div>
+                        <div className="text-sm text-muted-foreground">Select the date that suits your travel plan before choosing a tier.</div>
+                      </div>
+                      {selectedDeparture && (
+                        <div className="rounded-full bg-gold/10 text-gold px-3 py-1 text-xs uppercase tracking-[0.22em]">
+                          {selectedDeparture.label} · {formatDate(selectedDeparture.depart)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      {filteredDepartures.length === 0 ? (
+                        <div className="sm:col-span-3 p-12 text-center text-muted-foreground border border-dashed rounded-sm">
+                          No scheduled departures available. Please contact us for custom arrangements.
+                        </div>
+                      ) : (
+                        filteredDepartures.map((d) => (
+                          <button
+                            key={d.id}
+                            type="button"
+                            onClick={() => setSelectedDepartureId(d.id)}
+                            className={cn(
+                              "glass-card rounded-sm p-4 text-left transition-all",
+                              selectedDepartureId === d.id ? "border-gold bg-gold/10" : "border border-border hover:border-gold/60"
+                            )}
+                          >
+                            <div className="font-display text-lg text-gold mb-2">{d.label}</div>
+                            <div className="text-sm text-muted-foreground">Depart {formatDate(d.depart)}</div>
+                            <div className="text-sm text-muted-foreground">Return {formatDate(d.ret)}</div>
+                            <div className="mt-3 text-xs text-muted-foreground">{d.seatsLeft} seats left</div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
                   {travelTiers.length > 0 ? (
                     <div className="space-y-6">
                       <div className="font-display text-2xl">Choose your travel tier</div>
@@ -401,7 +519,7 @@ export default function Booking() {
                 <Button
                   variant="gold"
                   onClick={next}
-                  disabled={type === "umrah" && (!pkgId || !selectedDepartureId)}
+                  disabled={(type === "umrah" || type === "travel") && (!pkgId || !selectedDepartureId)}
                 >
                   Continue <ArrowRight className="w-4 h-4" />
                 </Button>
