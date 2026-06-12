@@ -1268,7 +1268,7 @@ export default function Admin() {
                     <Input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => handleImageUpload(e, true)}
+                      onChange={(e) => handleImageUpload(e, "scholarship")}
                       disabled={uploadingImage}
                       className="cursor-pointer"
                     />
