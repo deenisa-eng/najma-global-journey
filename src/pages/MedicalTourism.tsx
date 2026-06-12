@@ -103,13 +103,20 @@ export default function MedicalTourism() {
               affiliations.map((m) => (
                 <div key={m.id} className="relative glass-card rounded-sm overflow-hidden flex flex-col group hover:border-gold/50 transition-all duration-500">
                   <div className="relative h-48 overflow-hidden bg-muted/20">
-                    {m.imageUrl ? (
-                      <img src={m.imageUrl} alt={m.name} className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Building2 className="w-12 h-12 text-gold/20" />
-                      </div>
-                    )}
+                    {(() => {
+                      const src = m.name?.toLowerCase().includes("apollo")
+                        ? medicalApollo
+                        : m.name?.toLowerCase().includes("king")
+                        ? medicalKings
+                        : m.imageUrl;
+                      return src ? (
+                        <img src={src} alt={m.name} className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Building2 className="w-12 h-12 text-gold/20" />
+                        </div>
+                      );
+                    })()}
                     <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
                     <div className="absolute bottom-4 left-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white">
                       <MapPin className="w-3.5 h-3.5 text-gold" />
