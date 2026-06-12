@@ -1,6 +1,6 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { Menu, X, LogOut, LayoutDashboard, Calendar, Sparkles, MessageSquare, Settings, GraduationCap, HeartPulse } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Menu, X, LogOut, LayoutDashboard, Calendar, Sparkles, MessageSquare, Settings, GraduationCap, HeartPulse, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import najmaLogo from "@/assets/najma.png";
@@ -8,13 +8,11 @@ import TopBar from "@/components/layout/TopBar";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 
-const adminLinks = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
+const managementLinks = [
   { to: "/admin/departures", label: "Departures", icon: Calendar },
   { to: "/admin/tiers", label: "Tiers", icon: Sparkles },
   { to: "/admin/study-opportunities", label: "Study Opportunities", icon: GraduationCap },
   { to: "/admin/medical-affiliations", label: "Medical Affiliations", icon: HeartPulse },
-  { to: "/admin/inquiries", label: "Inquiries", badge: true, icon: MessageSquare },
   { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
