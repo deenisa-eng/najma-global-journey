@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, Briefcase, Camera, Users, ShieldCheck, Star, RefreshCw, Crown, Gem } from "lucide-react";
 import Layout from "@/components/layout/Layout";
+import SocialShare from "@/components/SocialShare";
 import { Button } from "@/components/ui/button";
 import { formatNGN } from "@/data/packages";
 import { getPackageTiers, getTravelDepartures, type PackageTier } from "@/lib/schedules";
@@ -176,6 +177,15 @@ export default function TravelVisas() {
                         <Button asChild variant={featured ? "gold" : "outlineGold"} className="mt-auto w-full">
                           <Link to={`/packages/travel/${t.id}`}>View Details <ArrowRight className="w-4 h-4" /></Link>
                         </Button>
+
+                        <div className="mt-4">
+                          <SocialShare
+                            title={`${t.tier} Travel Package`}
+                            description={`Explore our ${t.tier} travel package with ${t.duration}.`}
+                            url={`/packages/travel/${t.id}`}
+                            compact
+                          />
+                        </div>
                       </div>
                     </div>
                   );

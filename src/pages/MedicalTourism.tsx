@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, HeartPulse, ShieldPlus, Stethoscope, Building2, MapPin, RefreshCw, Globe } from "lucide-react";
 import Layout from "@/components/layout/Layout";
+import SocialShare from "@/components/SocialShare";
 import { Button } from "@/components/ui/button";
 import { getMedicalAffiliations, type MedicalAffiliation } from "@/lib/schedules";
 import plane from "@/assets/plane.jpg";
@@ -47,6 +48,13 @@ export default function MedicalTourism() {
             <p className="text-lg text-muted-foreground max-w-2xl">
               We help patients and families access quality treatment abroad with coordinated support from consultation to recovery.
             </p>
+            <div className="mt-10 max-w-xl">
+              <SocialShare
+                title="Medical Tourism at Najma Global Journey"
+                description="Trusted care beyond borders – share our medical tourism support with friends and family."
+                url="/medical-tourism"
+              />
+            </div>
           </div>
         </div>
       </section>

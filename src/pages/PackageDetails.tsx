@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Calendar, Check, MapPin, RefreshCw, Star, Users } from "lucide-react";
 import Layout from "@/components/layout/Layout";
+import SocialShare from "@/components/SocialShare";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatNGN } from "@/data/packages";
 import { getUmrahDepartures, getUmrahTiers, type UmrahDeparture, type UmrahTier } from "@/lib/schedules";
@@ -106,6 +107,13 @@ export default function PackageDetails() {
               <span className="inline-flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-gold" /> Mecca & Medina
               </span>
+            </div>
+            <div className="mt-8">
+              <SocialShare
+                title={`${tier.tier} Umrah Package`}
+                description={description}
+                url={`/packages/umrah/${tier.id}`}
+              />
             </div>
           </div>
         </div>

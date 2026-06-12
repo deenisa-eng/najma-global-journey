@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Calendar, Check, Globe, GraduationCap, MapPin, RefreshCw, ExternalLink } from "lucide-react";
 import Layout from "@/components/layout/Layout";
+import SocialShare from "@/components/SocialShare";
 import { Button } from "@/components/ui/button";
 import { getScholarships, type Scholarship } from "@/lib/schedules";
 import studyAbroad from "@/assets/study-abroad.jpg";
@@ -85,6 +86,13 @@ export default function StudyOpportunityDetails() {
               <span className="inline-flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-gold" /> {scholarship.duration}
               </span>
+            </div>
+            <div className="mt-8">
+              <SocialShare
+                title={scholarship.title}
+                description={scholarship.description || `Discover this ${scholarship.duration} opportunity in ${scholarship.location}.`}
+                url={`/scholarships/${scholarship.id}`}
+              />
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, Plane, Star, Crown, Gem, RefreshCw } from "lucide-react";
 import Layout from "@/components/layout/Layout";
+import SocialShare from "@/components/SocialShare";
 import { Button } from "@/components/ui/button";
 import { UMRAH_INCLUSIONS, UMRAH_PRICE, formatDate, formatNGN } from "@/data/packages";
 import { getUmrahDepartures, getUmrahTiers, type UmrahDeparture, type UmrahTier } from "@/lib/schedules";
@@ -161,6 +162,15 @@ export default function Umrah() {
                       <Button asChild variant={featured ? "gold" : "outlineGold"} className="mt-auto w-full">
                         <Link to={`/packages/umrah/${t.id}`}>View Details <ArrowRight className="w-4 h-4" /></Link>
                       </Button>
+
+                      <div className="mt-4">
+                        <SocialShare
+                          title={`${t.tier} Umrah Package`}
+                          description={`Explore our ${t.tier} Umrah package with ${t.duration}.`}
+                          url={`/packages/umrah/${t.id}`}
+                          compact
+                        />
+                      </div>
                     </div>
                   </div>
                 );

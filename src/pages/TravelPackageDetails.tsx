@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Calendar, Check, Crown, Gem, MapPin, RefreshCw, Star, Users } from "lucide-react";
 import Layout from "@/components/layout/Layout";
+import SocialShare from "@/components/SocialShare";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatNGN } from "@/data/packages";
 import { getPackageTiers, getTravelDepartures, type PackageTier } from "@/lib/schedules";
@@ -99,6 +100,13 @@ export default function TravelPackageDetails() {
               <span className="inline-flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-gold" /> Global destinations
               </span>
+            </div>
+            <div className="mt-8">
+              <SocialShare
+                title={`${tier.tier} Travel Package`}
+                description={description}
+                url={`/packages/travel/${tier.id}`}
+              />
             </div>
           </div>
         </div>

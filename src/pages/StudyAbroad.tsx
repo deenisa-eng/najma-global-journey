@@ -4,6 +4,7 @@ import { z } from "zod";
 import { ArrowRight, Check, GraduationCap, Globe, Calendar, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import Layout from "@/components/layout/Layout";
+import SocialShare from "@/components/SocialShare";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -164,6 +165,15 @@ export default function StudyAbroad() {
                     <Button asChild variant={s.isFeatured ? "gold" : "outlineGold"} className="mt-auto w-full">
                       <Link to={`/scholarships/${s.id}`}>View Details <ArrowRight className="w-4 h-4" /></Link>
                     </Button>
+
+                    <div className="mt-4">
+                      <SocialShare
+                        title={s.title}
+                        description={`Discover this ${s.duration} scholarship opportunity for ${s.location}.`}
+                        url={`/scholarships/${s.id}`}
+                        compact
+                      />
+                    </div>
                   </div>
                 </div>
               ))
