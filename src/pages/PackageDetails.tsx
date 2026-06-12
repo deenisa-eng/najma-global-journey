@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Calendar, Check, MapPin, RefreshCw, Star, Users } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { formatDate, formatNGN, UMRAH_INCLUSIONS } from "@/data/packages";
+import { formatDate, formatNGN } from "@/data/packages";
 import { getUmrahDepartures, getUmrahTiers, type UmrahDeparture, type UmrahTier } from "@/lib/schedules";
 import umrahPremium from "@/assets/umrah-premium.jpg";
 import umrahLuxury from "@/assets/umrah-luxury.jpg";
@@ -14,15 +14,6 @@ const TIER_IMAGE: Record<string, string> = {
   Premium: umrahPremium,
   Luxury: umrahLuxury,
   Economy: umrahEconomy,
-};
-
-const TIER_DESCRIPTION: Record<string, string> = {
-  Premium:
-    "An Umrah Premium package is designed for pilgrims who want to prioritize comfort, convenience, and privacy. Ideal for the elderly, families with young children, or anyone seeking a seamless, stress-free journey so they can focus entirely on their worship.",
-  Luxury:
-    "Our Luxury Umrah package balances refined comfort with thoughtful access — 5-star hotels within walking distance of the Haram, attentive service, and a dedicated scholar to guide the rites at every step.",
-  Economy:
-    "The Economy Umrah package delivers everything required for a meaningful pilgrimage — central 4-star accommodation, smooth visa processing, and reliable group transfers — at a graceful, accessible price point.",
 };
 
 export default function PackageDetails() {
@@ -79,14 +70,14 @@ export default function PackageDetails() {
   const pct = Math.round((tier.seatsBooked / tier.totalSeats) * 100);
   const left = tier.totalSeats - tier.seatsBooked;
   const deposit = Math.round(tier.price * 0.4);
-  const description = TIER_DESCRIPTION[tier.tier] || `Our ${tier.tier} Umrah package is crafted for a truly memorable pilgrimage.`;
+  const description = tier.description || `Our ${tier.tier} Umrah package is crafted for a truly memorable pilgrimage.`;
 
   return (
     <Layout>
       {/* Hero */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={img} alt={`Umrah ${tier.tier}`} className="w-full h-full object-cover" />
+          <img src={img} alt={`Umrah ${tier.tier}`} className="w-full h-full object-cover object-top" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/55 to-background/20" />
         </div>
         <div className="container-luxe relative">
@@ -126,13 +117,13 @@ export default function PackageDetails() {
           <div className="space-y-14">
             <div>
               <h2 className="font-display text-3xl text-gold mb-5">About This Package</h2>
-              <p className="text-foreground/85 leading-relaxed max-w-2xl">{description}</p>
+              <p className="text-foreground/85 leading-relaxed max-w-2xl whitespace-pre-wrap">{description}</p>
             </div>
 
             <div>
               <h2 className="font-display text-3xl text-gold mb-6">What's Included</h2>
               <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
-                {[...tier.highlights, ...UMRAH_INCLUSIONS].slice(0, 8).map((item) => (
+                {tier.highlights.map((item) => (
                   <li key={item} className="flex items-start gap-3 text-sm">
                     <span className="w-5 h-5 rounded-full bg-gold/15 border border-gold/40 flex items-center justify-center mt-0.5 shrink-0">
                       <Check className="w-3 h-3 text-gold" />

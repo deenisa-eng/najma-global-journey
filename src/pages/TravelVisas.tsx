@@ -111,7 +111,7 @@ export default function TravelVisas() {
                           src={t.imageUrl || plane}
                           alt={`Travel ${t.tier} package`}
                           loading="lazy"
-                          className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                          className="w-full h-full object-cover object-top transition-transform duration-700 hover:scale-105"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
 

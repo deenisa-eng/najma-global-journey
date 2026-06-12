@@ -9,15 +9,6 @@ import plane from "@/assets/travel-visas.jpg";
 
 const TIER_ICON: Record<string, any> = { Economy: Star, Luxury: Gem, Premium: Crown };
 
-const TIER_DESCRIPTION: Record<string, string> = {
-  Premium:
-    "A Premium travel package delivers luxury visa and itinerary support, premium hotel and flight planning, and concierge-level assistance for business, tourism, and family visits.",
-  Luxury:
-    "Our Luxury travel package is designed for guests who want seamless visa processing, superior travel amenities, and bespoke itinerary services for high-value trips abroad.",
-  Economy:
-    "The Economy travel package provides affordable visa guidance, entry-level travel support, and reliable trip planning for leisure, business, and visiting family overseas.",
-};
-
 export default function TravelPackageDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -72,14 +63,14 @@ export default function TravelPackageDetails() {
   const pct = Math.round((tier.seatsBooked / tier.totalSeats) * 100);
   const left = tier.totalSeats - tier.seatsBooked;
   const deposit = Math.round(tier.price * 0.4);
-  const description = TIER_DESCRIPTION[tier.tier] || `Our ${tier.tier} travel package is tailored to make your visa, travel, and itinerary planning easy and reliable.`;
+  const description = tier.description || `Our ${tier.tier} travel package is tailored to make your visa, travel, and itinerary planning easy and reliable.`;
   const Icon = TIER_ICON[tier.tier] || Star;
 
   return (
     <Layout>
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={img} alt={`Travel ${tier.tier}`} className="w-full h-full object-cover" />
+          <img src={img} alt={`Travel ${tier.tier}`} className="w-full h-full object-cover object-top" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/55 to-background/20" />
         </div>
         <div className="container-luxe relative">
@@ -118,13 +109,13 @@ export default function TravelPackageDetails() {
           <div className="space-y-14">
             <div>
               <h2 className="font-display text-3xl text-gold mb-5">About This Package</h2>
-              <p className="text-foreground/85 leading-relaxed max-w-2xl">{description}</p>
+              <p className="text-foreground/85 leading-relaxed max-w-2xl whitespace-pre-wrap">{description}</p>
             </div>
 
             <div>
               <h2 className="font-display text-3xl text-gold mb-6">What's Included</h2>
               <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
-                {tier.highlights.slice(0, 8).map((item) => (
+                {tier.highlights.map((item) => (
                   <li key={item} className="flex items-start gap-3 text-sm">
                     <span className="w-5 h-5 rounded-full bg-gold/15 border border-gold/40 flex items-center justify-center mt-0.5 shrink-0">
                       <Check className="w-3 h-3 text-gold" />

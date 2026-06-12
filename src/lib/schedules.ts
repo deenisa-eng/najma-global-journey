@@ -38,6 +38,33 @@ export type PackageTier = {
   highlights: string[];
   isFeatured: boolean;
   imageUrl?: string;
+  description?: string;
+};
+
+export type Scholarship = {
+  id: string;
+  title: string;
+  institution: string;
+  location: string;
+  amount: string;
+  deadline: string;
+  duration: string;
+  highlights: string[];
+  isFeatured: boolean;
+  imageUrl?: string;
+  link?: string;
+  description?: string;
+};
+
+export type MedicalAffiliation = {
+  id: string;
+  name: string;
+  location: string;
+  specialties: string[];
+  description?: string;
+  imageUrl?: string;
+  link?: string;
+  isFeatured: boolean;
 };
 
 export type UmrahTier = PackageTier;
@@ -70,7 +97,104 @@ function normalizePackageTier(row: any): PackageTier {
     highlights: row.highlights || [],
     isFeatured: row.is_featured || false,
     imageUrl: row.image_url,
+    description: row.description,
   };
+}
+
+function normalizeScholarship(row: any): Scholarship {
+  return {
+    id: row.id,
+    title: row.title,
+    institution: row.institution,
+    location: row.location,
+    amount: row.amount,
+    deadline: row.deadline,
+    duration: row.duration,
+    highlights: row.highlights || [],
+    isFeatured: row.is_featured || false,
+    imageUrl: row.image_url,
+    link: row.link,
+    description: row.description,
+  };
+}
+
+function normalizeMedicalAffiliation(row: any): MedicalAffiliation {
+  return {
+    id: row.id,
+    name: row.name,
+    location: row.location,
+    specialties: row.specialties || [],
+    description: row.description,
+    imageUrl: row.image_url,
+    link: row.link,
+    isFeatured: row.is_featured || false,
+  };
+}
+
+export async function getScholarships(): Promise<Scholarship[]> {
+  const { data, error } = await supabase.from("scholarships").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  if (!data) return [];
+  return (data as any[]).map(normalizeScholarship);
+}
+
+export async function upsertScholarship(s: Partial<Scholarship> & { id: string }) {
+  const payload = {
+    id: s.id,
+    title: s.title,
+    institution: s.institution,
+    location: s.location,
+    amount: s.amount,
+    deadline: s.deadline,
+    duration: s.duration,
+    highlights: s.highlights,
+    is_featured: s.isFeatured,
+    image_url: s.imageUrl,
+    link: s.link,
+    description: s.description,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase.from("scholarships").upsert(payload, { onConflict: "id" }).select().single();
+  if (error) throw error;
+  return normalizeScholarship(data);
+}
+
+export async function deleteScholarship(id: string) {
+  const { error } = await supabase.from("scholarships").delete().eq("id", id);
+  if (error) throw error;
+  return true;
+}
+
+export async function getMedicalAffiliations(): Promise<MedicalAffiliation[]> {
+  const { data, error } = await supabase.from("medical_affiliations").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  if (!data) return [];
+  return (data as any[]).map(normalizeMedicalAffiliation);
+}
+
+export async function upsertMedicalAffiliation(m: Partial<MedicalAffiliation> & { id: string }) {
+  const payload = {
+    id: m.id,
+    name: m.name,
+    location: m.location,
+    specialties: m.specialties,
+    description: m.description,
+    image_url: m.imageUrl,
+    link: m.link,
+    is_featured: m.isFeatured,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase.from("medical_affiliations").upsert(payload, { onConflict: "id" }).select().single();
+  if (error) throw error;
+  return normalizeMedicalAffiliation(data);
+}
+
+export async function deleteMedicalAffiliation(id: string) {
+  const { error } = await supabase.from("medical_affiliations").delete().eq("id", id);
+  if (error) throw error;
+  return true;
 }
 
 export async function getPackageTiers(service: TierService): Promise<PackageTier[]> {
@@ -93,6 +217,7 @@ export async function upsertPackageTier(tier: Partial<PackageTier> & { id: strin
     highlights: tier.highlights,
     is_featured: tier.isFeatured,
     image_url: tier.imageUrl,
+    description: tier.description,
     updated_at: new Date().toISOString(),
   };
 

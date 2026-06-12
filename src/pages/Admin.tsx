@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Trash2, Check, Clock, RefreshCw, LayoutDashboard, Calendar, MessageSquare, Settings as SettingsIcon, ChevronRight, Sparkles, Plus, X as XIcon } from "lucide-react";
+import { Trash2, Check, Clock, RefreshCw, LayoutDashboard, Calendar, MessageSquare, Settings as SettingsIcon, ChevronRight, Sparkles, Plus, X as XIcon, GraduationCap, HeartPulse } from "lucide-react";
 import { toast } from "sonner";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatNGN } from "@/data/packages";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-import { getUmrahDepartures, upsertUmrahDeparture, deleteUmrahDeparture, getHajjPackage, upsertHajjPackage, getPackageTiers, upsertPackageTier, getTravelDepartures, upsertTravelDeparture, deleteTravelDeparture, getBusinessDepartures, upsertBusinessDeparture, deleteBusinessDeparture, type PackageTier, type TierService } from "@/lib/schedules";
+import { getUmrahDepartures, upsertUmrahDeparture, deleteUmrahDeparture, getHajjPackage, upsertHajjPackage, getPackageTiers, upsertPackageTier, getTravelDepartures, upsertTravelDeparture, deleteTravelDeparture, getBusinessDepartures, upsertBusinessDeparture, deleteBusinessDeparture, getScholarships, upsertScholarship, deleteScholarship, getMedicalAffiliations, upsertMedicalAffiliation, deleteMedicalAffiliation, type PackageTier, type TierService, type Scholarship, type MedicalAffiliation } from "@/lib/schedules";
 
 type Inquiry = {
   id: string;
@@ -34,6 +34,15 @@ type AdminBooking = {
   contact_name: string;
   contact_email: string;
   contact_phone: string;
+  notes?: string | null;
+  metadata?: {
+    type?: string;
+    departure?: {
+      label: string;
+      depart: string;
+      ret: string;
+    };
+  } | null;
 };
 
 export default function Admin() {
@@ -43,6 +52,8 @@ export default function Admin() {
     const path = location.pathname;
     if (path === "/admin/departures") return "departures";
     if (path === "/admin/tiers") return "tiers";
+    if (path === "/admin/study-opportunities") return "study-opportunities";
+    if (path === "/admin/medical-affiliations") return "medical-affiliations";
     if (path === "/admin/inquiries") return "inquiries";
     if (path === "/admin/settings") return "settings";
     return "dashboard";
@@ -72,7 +83,15 @@ export default function Admin() {
   const [tierLoading, setTierLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [editingScholarship, setEditingScholarship] = useState<Partial<Scholarship> | null>(null);
+  const [scholarshipLoading, setScholarshipLoading] = useState(false);
+
+  const [medicalAffiliations, setMedicalAffiliations] = useState<MedicalAffiliation[]>([]);
+  const [editingMedical, setEditingMedical] = useState<Partial<MedicalAffiliation> | null>(null);
+  const [medicalLoading, setMedicalLoading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "tier" | "scholarship" | "medical" = "tier") => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -95,7 +114,13 @@ export default function Admin() {
         .from('package-images')
         .getPublicUrl(filePath);
 
-      setEditingTier((prev) => prev ? { ...prev, imageUrl: publicUrl } : null);
+      if (type === "scholarship") {
+        setEditingScholarship((prev) => prev ? { ...prev, imageUrl: publicUrl } : null);
+      } else if (type === "medical") {
+        setEditingMedical((prev) => prev ? { ...prev, imageUrl: publicUrl } : null);
+      } else {
+        setEditingTier((prev) => prev ? { ...prev, imageUrl: publicUrl } : null);
+      }
       toast.success("Image uploaded successfully");
     } catch (err: any) {
       toast.error(`Image upload failed: ${err.message}`);
@@ -122,13 +147,23 @@ export default function Admin() {
     ]);
 
     try {
-      const [d, h, t, tr, b] = await Promise.all([getUmrahDepartures(), getHajjPackage(), getPackageTiers("umrah"), getTravelDepartures(), getBusinessDepartures()]);
+      const [d, h, t, tr, b, s, m] = await Promise.all([
+        getUmrahDepartures(),
+        getHajjPackage(),
+        getPackageTiers("umrah"),
+        getTravelDepartures(),
+        getBusinessDepartures(),
+        getScholarships(),
+        getMedicalAffiliations()
+      ]);
       setDepartures(d as any[]);
       setTravelDepartures(tr as any[]);
       setBusinessDepartures(b as any[]);
       setDepartureError(null);
       setHajjPackage(h as any);
       setPackageTiers(t);
+      setScholarships(s);
+      setMedicalAffiliations(m);
       if (h) {
         setHajjForm({
           title: h.title || "",
@@ -347,6 +382,16 @@ export default function Admin() {
                       <td className="px-6 py-5">
                         <div className="font-medium capitalize">{b.service_type}</div>
                         <div className="text-[10px] text-muted-foreground truncate max-w-[150px]">{b.package_label || "—"}</div>
+                        {b.metadata?.departure && (
+                          <div className="text-[9px] text-gold mt-1 font-bold">
+                            {b.metadata.departure.label} ({new Date(b.metadata.departure.depart).toLocaleDateString("en-NG")})
+                          </div>
+                        )}
+                        {b.notes && (
+                          <div className="text-[9px] text-muted-foreground mt-1 italic line-clamp-1 max-w-[150px]">
+                            "{b.notes}"
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-5">
                         <div className="font-medium">{b.contact_name}</div>
@@ -398,7 +443,19 @@ export default function Admin() {
                     )}>{b.status}</span>
                   </div>
                   <div className="text-xs space-y-2 mb-4 text-muted-foreground">
-                    <div className="flex justify-between"><span>Service:</span> <span className="text-foreground capitalize">{b.service_type}</span></div>
+                    <div className="flex justify-between items-start gap-4">
+                      <span>Service:</span> 
+                      <div className="text-right">
+                        <div className="text-foreground capitalize">{b.service_type}</div>
+                        <div className="text-[10px]">{b.package_label}</div>
+                        {b.metadata?.departure && (
+                          <div className="text-[9px] text-gold font-bold mt-0.5">{b.metadata.departure.label}</div>
+                        )}
+                        {b.notes && (
+                          <div className="text-[9px] italic mt-0.5 max-w-[150px] truncate">"{b.notes}"</div>
+                        )}
+                      </div>
+                    </div>
                     <div className="flex justify-between"><span>Amount:</span> <span className="text-foreground font-medium">{formatNGN(b.amount ?? 0)}</span></div>
                     <div className="flex justify-between"><span>Date:</span> <span className="text-foreground">{new Date(b.created_at).toLocaleDateString("en-NG")}</span></div>
                   </div>
@@ -935,7 +992,7 @@ export default function Admin() {
           </div>
 
           {!editingTier && (
-            <Button onClick={() => setEditingTier({ id: "", service: tierService, tier: "", stars: 4, price: 0, duration: "14 Days", totalSeats: 50, seatsBooked: 0, highlights: [], isFeatured: false, imageUrl: "" })}>
+            <Button onClick={() => setEditingTier({ id: "", service: tierService, tier: "", stars: 4, price: 0, duration: "14 Days", totalSeats: 50, seatsBooked: 0, highlights: [], isFeatured: false, imageUrl: "", description: "" })}>
               <Plus className="w-4 h-4 mr-2" /> Add Tier
             </Button>
           )}
@@ -991,6 +1048,15 @@ export default function Admin() {
                 <Input type="number" value={editingTier.seatsBooked} onChange={(e) => setEditingTier({ ...editingTier, seatsBooked: Number(e.target.value) })} />
               </div>
               <div className="sm:col-span-2 space-y-2">
+                <Label>Description (Dynamic Content)</Label>
+                <textarea
+                  className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={editingTier.description || ""}
+                  onChange={(e) => setEditingTier({ ...editingTier, description: e.target.value })}
+                  placeholder="Detailed description for the package details page..."
+                />
+              </div>
+              <div className="sm:col-span-2 space-y-2">
                 <Label>Highlights (one per line)</Label>
                 <textarea
                   className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -1003,7 +1069,7 @@ export default function Admin() {
                 <Label>Package Card Image (Required)</Label>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-lg border border-dashed border-border bg-muted/10">
                   {editingTier.imageUrl ? (
-                    <img src={editingTier.imageUrl} alt="Package preview" className="w-24 h-24 object-cover rounded-md border border-border bg-background" />
+                    <img src={editingTier.imageUrl} alt="Package preview" className="w-24 h-24 object-cover object-top rounded-md border border-border bg-background" />
                   ) : (
                     <div className="w-24 h-24 rounded-md border border-border bg-muted flex items-center justify-center text-[10px] text-muted-foreground text-center p-2">
                       No image uploaded
@@ -1104,6 +1170,350 @@ export default function Admin() {
                     </li>
                   ))}
                   {t.highlights.length > 3 && <li className="text-[10px] text-muted-foreground italic">+{t.highlights.length - 3} more...</li>}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function renderScholarships() {
+    return (
+      <div className="space-y-10 animate-fade-in">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-display text-2xl flex items-center gap-3">
+              <GraduationCap className="w-6 h-6 text-gold" />
+              Study Opportunities
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">Configure study opportunities displayed in the Study Abroad section.</p>
+          </div>
+
+          {!editingScholarship && (
+            <Button onClick={() => setEditingScholarship({ id: "", title: "", institution: "", location: "", amount: "", deadline: "", duration: "", highlights: [], isFeatured: false, imageUrl: "", link: "", description: "" })}>
+              <Plus className="w-4 h-4 mr-2" /> Add Study Opportunity
+            </Button>
+          )}
+        </div>
+
+        {editingScholarship ? (
+          <div className="glass-card rounded-xl p-8 border-t-4 border-t-gold max-w-3xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-display text-2xl">{editingScholarship.id ? "Edit Opportunity" : "Create New Opportunity"}</h3>
+              <Button variant="ghost" size="icon" onClick={() => setEditingScholarship(null)}>
+                <XIcon className="w-5 h-5" />
+              </Button>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label>Opportunity Title</Label>
+                <Input value={editingScholarship.title} onChange={(e) => setEditingScholarship({ ...editingScholarship, title: e.target.value })} placeholder="e.g. Chevening Scholarship" />
+              </div>
+              <div className="space-y-2">
+                <Label>Institution / Provider</Label>
+                <Input value={editingScholarship.institution} onChange={(e) => setEditingScholarship({ ...editingScholarship, institution: e.target.value })} placeholder="e.g. UK Universities" />
+              </div>
+              <div className="space-y-2">
+                <Label>Location</Label>
+                <Input value={editingScholarship.location} onChange={(e) => setEditingScholarship({ ...editingScholarship, location: e.target.value })} placeholder="e.g. United Kingdom" />
+              </div>
+              <div className="space-y-2">
+                <Label>Award Amount</Label>
+                <Input value={editingScholarship.amount} onChange={(e) => setEditingScholarship({ ...editingScholarship, amount: e.target.value })} placeholder="e.g. Fully Funded" />
+              </div>
+              <div className="space-y-2">
+                <Label>Deadline</Label>
+                <Input value={editingScholarship.deadline} onChange={(e) => setEditingScholarship({ ...editingScholarship, deadline: e.target.value })} placeholder="e.g. Nov 2026" />
+              </div>
+              <div className="space-y-2">
+                <Label>Duration</Label>
+                <Input value={editingScholarship.duration} onChange={(e) => setEditingScholarship({ ...editingScholarship, duration: e.target.value })} placeholder="e.g. 1 Year Masters" />
+              </div>
+              <div className="sm:col-span-2 space-y-2">
+                <Label>Application Link (Optional)</Label>
+                <Input value={editingScholarship.link} onChange={(e) => setEditingScholarship({ ...editingScholarship, link: e.target.value })} placeholder="https://..." />
+              </div>
+              <div className="sm:col-span-2 space-y-2">
+                <Label>Description (Dynamic Content)</Label>
+                <textarea
+                  className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={editingScholarship.description || ""}
+                  onChange={(e) => setEditingScholarship({ ...editingScholarship, description: e.target.value })}
+                  placeholder="Detailed description for the study opportunity details page..."
+                />
+              </div>
+              <div className="sm:col-span-2 space-y-2">
+                <Label>Highlights / Eligibility (one per line)</Label>
+                <textarea
+                  className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={editingScholarship.highlights?.join("\n")}
+                  onChange={(e) => setEditingScholarship({ ...editingScholarship, highlights: e.target.value.split("\n") })}
+                />
+              </div>
+
+              <div className="sm:col-span-2 space-y-2">
+                <Label>Scholarship Image (Required)</Label>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-lg border border-dashed border-border bg-muted/10">
+                  {editingScholarship.imageUrl ? (
+                    <img src={editingScholarship.imageUrl} alt="Study opportunity preview" className="w-24 h-24 object-cover object-top rounded-md border border-border bg-background" />
+                  ) : (
+                    <div className="w-24 h-24 rounded-md border border-border bg-muted flex items-center justify-center text-[10px] text-muted-foreground text-center p-2">
+                      No image uploaded
+                    </div>
+                  )}
+                  <div className="flex-1 space-y-2 w-full">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, true)}
+                      disabled={uploadingImage}
+                      className="cursor-pointer"
+                    />
+                    <p className="text-[10px] text-muted-foreground">
+                      {uploadingImage ? "Uploading file, please wait..." : "Supported formats: JPG, PNG, WebP (Max 5MB)"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="featured-scholarship"
+                  checked={editingScholarship.isFeatured}
+                  onCheckedChange={(val) => setEditingScholarship({ ...editingScholarship, isFeatured: !!val })}
+                />
+                <Label htmlFor="featured-scholarship" className="cursor-pointer">Featured (Show Most Booked badge)</Label>
+              </div>
+              {!editingScholarship.id && (
+                <div className="space-y-2">
+                  <Label>Internal ID (e.g. uk-masters-2026)</Label>
+                  <Input value={editingScholarship.id} onChange={(e) => setEditingScholarship({ ...editingScholarship, id: e.target.value })} />
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 flex gap-3">
+              <Button className="flex-1" onClick={async () => {
+                if (!editingScholarship.id || !editingScholarship.title) {
+                  toast.error("ID and Title are required");
+                  return;
+                }
+                setScholarshipLoading(true);
+                try {
+                  await upsertScholarship(editingScholarship as any);
+                  setScholarships(await getScholarships());
+                  setEditingScholarship(null);
+                  toast.success("Scholarship saved successfully");
+                } catch (err: any) {
+                  toast.error(err.message);
+                } finally {
+                  setScholarshipLoading(false);
+                }
+              }} disabled={scholarshipLoading || uploadingImage}>
+                {scholarshipLoading && <RefreshCw className="w-4 h-4 mr-2 animate-spin" />}
+                Save Scholarship
+              </Button>
+              <Button variant="outline" onClick={() => setEditingScholarship(null)}>Cancel</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {scholarships.map((s) => (
+              <div key={s.id} className={cn("glass-card rounded-xl p-6 border-l-4", s.isFeatured ? "border-l-gold shadow-gold" : "border-l-border")}>
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{s.location}</div>
+                    <h3 className="font-display text-2xl text-foreground">{s.title}</h3>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingScholarship(s)}>
+                      <SettingsIcon className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={async () => {
+                      if (confirm("Delete this scholarship?")) {
+                        await deleteScholarship(s.id);
+                        setScholarships(await getScholarships());
+                        toast.success("Scholarship removed");
+                      }
+                    }}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="text-xl font-display text-gold mb-2">{s.amount}</div>
+                <div className="text-xs text-muted-foreground mb-4">{s.institution}</div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-2">Highlights</div>
+                <ul className="space-y-1 mb-6">
+                  {s.highlights.slice(0, 3).map((h, i) => (
+                    <li key={i} className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Check className="w-3 h-3 text-gold" /> {h}
+                    </li>
+                  ))}
+                </ul>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Deadline: {s.deadline}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function renderMedical() {
+    return (
+      <div className="space-y-10 animate-fade-in">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-display text-2xl flex items-center gap-3">
+              <HeartPulse className="w-6 h-6 text-gold" />
+              Medical Affiliations
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">Configure hospital partners and clinics for Medical Tourism.</p>
+          </div>
+
+          {!editingMedical && (
+            <Button onClick={() => setEditingMedical({ id: "", name: "", location: "", specialties: [], description: "", imageUrl: "", link: "", isFeatured: false })}>
+              <Plus className="w-4 h-4 mr-2" /> Add Affiliation
+            </Button>
+          )}
+        </div>
+
+        {editingMedical ? (
+          <div className="glass-card rounded-xl p-8 border-t-4 border-t-gold max-w-3xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-display text-2xl">{editingMedical.id ? "Edit Affiliation" : "Create New Affiliation"}</h3>
+              <Button variant="ghost" size="icon" onClick={() => setEditingMedical(null)}>
+                <XIcon className="w-5 h-5" />
+              </Button>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label>Hospital/Clinic Name</Label>
+                <Input value={editingMedical.name} onChange={(e) => setEditingMedical({ ...editingMedical, name: e.target.value })} placeholder="e.g. Apollo Hospitals" />
+              </div>
+              <div className="space-y-2">
+                <Label>Location</Label>
+                <Input value={editingMedical.location} onChange={(e) => setEditingMedical({ ...editingMedical, location: e.target.value })} placeholder="e.g. Chennai, India" />
+              </div>
+              <div className="sm:col-span-2 space-y-2">
+                <Label>Website Link (Optional)</Label>
+                <Input value={editingMedical.link} onChange={(e) => setEditingMedical({ ...editingMedical, link: e.target.value })} placeholder="https://..." />
+              </div>
+              <div className="sm:col-span-2 space-y-2">
+                <Label>Description</Label>
+                <textarea
+                  className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={editingMedical.description || ""}
+                  onChange={(e) => setEditingMedical({ ...editingMedical, description: e.target.value })}
+                />
+              </div>
+              <div className="sm:col-span-2 space-y-2">
+                <Label>Specialties (one per line)</Label>
+                <textarea
+                  className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={editingMedical.specialties?.join("\n")}
+                  onChange={(e) => setEditingMedical({ ...editingMedical, specialties: e.target.value.split("\n") })}
+                />
+              </div>
+
+              <div className="sm:col-span-2 space-y-2">
+                <Label>Hospital Image / Logo (Optional)</Label>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-lg border border-dashed border-border bg-muted/10">
+                  {editingMedical.imageUrl ? (
+                    <img src={editingMedical.imageUrl} alt="Hospital preview" className="w-24 h-24 object-cover object-top rounded-md border border-border bg-background" />
+                  ) : (
+                    <div className="w-24 h-24 rounded-md border border-border bg-muted flex items-center justify-center text-[10px] text-muted-foreground text-center p-2">
+                      No image uploaded
+                    </div>
+                  )}
+                  <div className="flex-1 space-y-2 w-full">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, "medical")}
+                      disabled={uploadingImage}
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="featured-medical"
+                  checked={editingMedical.isFeatured}
+                  onCheckedChange={(val) => setEditingMedical({ ...editingMedical, isFeatured: !!val })}
+                />
+                <Label htmlFor="featured-medical" className="cursor-pointer">Featured Partner</Label>
+              </div>
+              {!editingMedical.id && (
+                <div className="space-y-2">
+                  <Label>Internal ID (e.g. apollo-chennai)</Label>
+                  <Input value={editingMedical.id} onChange={(e) => setEditingMedical({ ...editingMedical, id: e.target.value })} />
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 flex gap-3">
+              <Button className="flex-1" onClick={async () => {
+                if (!editingMedical.id || !editingMedical.name) {
+                  toast.error("ID and Name are required");
+                  return;
+                }
+                setMedicalLoading(true);
+                try {
+                  await upsertMedicalAffiliation(editingMedical as any);
+                  setMedicalAffiliations(await getMedicalAffiliations());
+                  setEditingMedical(null);
+                  toast.success("Medical affiliation saved");
+                } catch (err: any) {
+                  toast.error(err.message);
+                } finally {
+                  setMedicalLoading(false);
+                }
+              }} disabled={medicalLoading || uploadingImage}>
+                {medicalLoading && <RefreshCw className="w-4 h-4 mr-2 animate-spin" />}
+                Save Affiliation
+              </Button>
+              <Button variant="outline" onClick={() => setEditingMedical(null)}>Cancel</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {medicalAffiliations.map((m) => (
+              <div key={m.id} className={cn("glass-card rounded-xl p-6 border-l-4", m.isFeatured ? "border-l-gold shadow-gold" : "border-l-border")}>
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{m.location}</div>
+                    <h3 className="font-display text-2xl text-foreground">{m.name}</h3>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingMedical(m)}>
+                      <SettingsIcon className="w-4 h-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={async () => {
+                      if (confirm("Delete this affiliation?")) {
+                        await deleteMedicalAffiliation(m.id);
+                        setMedicalAffiliations(await getMedicalAffiliations());
+                        toast.success("Affiliation removed");
+                      }
+                    }}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mb-4 line-clamp-2">{m.description}</div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-2">Specialties</div>
+                <ul className="space-y-1">
+                  {m.specialties.slice(0, 3).map((s, i) => (
+                    <li key={i} className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Check className="w-3 h-3 text-gold" /> {s}
+                    </li>
+                  ))}
                 </ul>
               </div>
             ))}
@@ -1288,6 +1698,8 @@ export default function Admin() {
                 {currentTab === "dashboard" && "Overview of system activity, revenue metrics, and booking registrations."}
                 {currentTab === "departures" && "Manage Umrah schedules and Hajj package configurations."}
                 {currentTab === "tiers" && "Configure tiers, pricing, and hotel highlights."}
+                {currentTab === "study-opportunities" && "Manage study opportunities for Nigerian students."}
+                {currentTab === "medical-affiliations" && "Configure hospital partners and clinics for medical tourism."}
                 {currentTab === "inquiries" && "Review and respond to messages from the website contact form."}
                 {currentTab === "settings" && "Configure your administrator profile and security credentials."}
               </p>
@@ -1305,6 +1717,8 @@ export default function Admin() {
             {currentTab === "dashboard" && renderDashboard()}
             {currentTab === "departures" && renderDepartures()}
             {currentTab === "tiers" && renderTiers()}
+            {currentTab === "study-opportunities" && renderScholarships()}
+            {currentTab === "medical-affiliations" && renderMedical()}
             {currentTab === "inquiries" && renderInquiries()}
             {currentTab === "settings" && renderSettings()}
           </div>

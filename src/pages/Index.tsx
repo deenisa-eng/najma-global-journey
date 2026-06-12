@@ -65,13 +65,13 @@ const Index = () => {
           <img
             src={heroKaaba}
             alt="The Holy Kaaba in Mecca at golden hour"
-            className="w-full h-full object-cover object-center lg:object-[center_35%] animate-ken-burns"
+            className="w-full h-full object-cover object-[center_35%] md:object-[center_35%] animate-none md:animate-ken-burns"
           />
-          <div className="absolute inset-0 bg-gradient-hero sm:bg-gradient-hero" />
-          <div className="absolute inset-0 bg-black/40 sm:bg-transparent lg:bg-gradient-to-r lg:from-background/50 lg:via-background/30 lg:to-transparent" />
+          <div className="absolute inset-0 bg-gradient-hero" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/50 via-background/30 to-background/10" />
         </div>
 
-        <div className="container-luxe relative z-10 py-20">
+        <div className="container-luxe relative z-10 py-24 md:py-28 lg:py-32">
           <div className="max-w-2xl animate-fade-in-up">
             <div className="eyebrow mb-6">
               <span className="w-8 h-px bg-gold" /> Najma Global Tours & Consulting

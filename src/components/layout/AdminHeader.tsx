@@ -1,6 +1,6 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, Calendar, Sparkles, MessageSquare, Settings, GraduationCap, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import najmaLogo from "@/assets/najma.png";
@@ -9,11 +9,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 
 const adminLinks = [
-  { to: "/admin", label: "Dashboard" },
-  { to: "/admin/departures", label: "Departures" },
-  { to: "/admin/tiers", label: "Tiers" },
-  { to: "/admin/inquiries", label: "Inquiries", badge: true },
-  { to: "/admin/settings", label: "Settings" },
+  { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/admin/departures", label: "Departures", icon: Calendar },
+  { to: "/admin/tiers", label: "Tiers", icon: Sparkles },
+  { to: "/admin/study-opportunities", label: "Study Opportunities", icon: GraduationCap },
+  { to: "/admin/medical-affiliations", label: "Medical Affiliations", icon: HeartPulse },
+  { to: "/admin/inquiries", label: "Inquiries", badge: true, icon: MessageSquare },
+  { to: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 export default function AdminHeader() {
@@ -73,19 +75,19 @@ export default function AdminHeader() {
       <TopBar />
       <div className="container-luxe flex items-center justify-between h-20">
 
-        <Link to="/" className="flex items-center gap-3 group">
+        <Link to="/" className="flex items-center gap-3 group shrink-0">
           <img
             src={najmaLogo}
             alt="Najma Global logo"
-            className="w-16 h-16 object-contain transition-transform group-hover:rotate-12 bg-white/90 rounded-full p-1"
+            className="w-12 h-12 sm:w-14 sm:h-14 object-contain transition-transform group-hover:rotate-12 bg-white/90 rounded-full p-1"
           />
-          <div className="leading-tight">
-            <div className="font-display text-xl text-foreground">Najma <span className="text-gold">Admin</span></div>
+          <div className="leading-tight hidden sm:block">
+            <div className="font-display text-lg sm:text-xl text-foreground">Najma <span className="text-gold">Admin</span></div>
             <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Management Portal</div>
           </div>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-4">
           {adminLinks.map((l) => (
             <NavLink
               key={l.to}
@@ -93,12 +95,13 @@ export default function AdminHeader() {
               end={l.to === "/admin"}
               className={({ isActive }) =>
                 cn(
-                  "luxe-link text-sm tracking-wide transition-colors flex items-center gap-1.5",
-                  isActive ? "text-gold" : "text-foreground/80 hover:text-foreground"
+                  "text-sm tracking-wide transition-colors flex items-center gap-2 px-2 py-2 rounded-md",
+                  isActive ? "text-gold bg-gold/5" : "text-foreground/80 hover:text-foreground hover:bg-muted/20"
                 )
               }
             >
-              {l.label}
+              <l.icon className="w-4 h-4" />
+              <span>{l.label}</span>
               {l.badge && unreadCount > 0 && (
                 <span className="px-1.5 py-0.5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full min-w-[1.2rem] text-center">
                   {unreadCount}
@@ -108,14 +111,12 @@ export default function AdminHeader() {
           ))}
         </nav>
 
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={signOut}>
-            <LogOut className="w-3.5 h-3.5" /> Sign Out
+            <LogOut className="w-3.5 h-3.5" />
           </Button>
           <Button asChild variant="outline" size="sm">
-            <Link to="/">
-              View Site
-            </Link>
+            <Link to="/">View Site</Link>
           </Button>
         </div>
 

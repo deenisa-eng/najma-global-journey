@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, HeartPulse, ShieldPlus, Stethoscope, Building2 } from "lucide-react";
+import { ArrowRight, Check, HeartPulse, ShieldPlus, Stethoscope, Building2, MapPin, RefreshCw, Globe } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
+import { getMedicalAffiliations, type MedicalAffiliation } from "@/lib/schedules";
 import plane from "@/assets/plane.jpg";
 
 const benefits = [
@@ -13,6 +15,20 @@ const benefits = [
 ];
 
 export default function MedicalTourism() {
+  const [affiliations, setAffiliations] = useState<MedicalAffiliation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getMedicalAffiliations();
+        setAffiliations(data);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
   return (
     <Layout>
       <section className="relative pt-32 pb-20 overflow-hidden">
@@ -56,6 +72,79 @@ export default function MedicalTourism() {
                 <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Affiliated Centers */}
+      <section className="py-20 bg-secondary/10">
+        <div className="container-luxe">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+              <div className="eyebrow mb-3">Our Network</div>
+              <h2 className="font-display text-4xl sm:text-5xl">Affiliated Medical Centers.</h2>
+            </div>
+            <p className="text-muted-foreground max-w-sm">We partner with world-class hospitals and specialized clinics across the globe.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {loading ? (
+              <div className="col-span-3 py-20 text-center">
+                <RefreshCw className="w-10 h-10 animate-spin mx-auto text-gold/40 mb-4" />
+                <p className="text-muted-foreground">Loading medical network...</p>
+              </div>
+            ) : affiliations.length === 0 ? (
+              <div className="col-span-3 py-20 text-center glass-card rounded-sm border-dashed">
+                <p className="text-muted-foreground">Network details are being updated. Please check back later.</p>
+              </div>
+            ) : (
+              affiliations.map((m) => (
+                <div key={m.id} className="relative glass-card rounded-sm overflow-hidden flex flex-col group hover:border-gold/50 transition-all duration-500">
+                  <div className="relative h-48 overflow-hidden bg-muted/20">
+                    {m.imageUrl ? (
+                      <img src={m.imageUrl} alt={m.name} className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Building2 className="w-12 h-12 text-gold/20" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+                    <div className="absolute bottom-4 left-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white">
+                      <MapPin className="w-3.5 h-3.5 text-gold" />
+                      {m.location}
+                    </div>
+                  </div>
+                  <div className="p-6 flex flex-1 flex-col">
+                    <h3 className="font-display text-2xl mb-2 group-hover:text-gold transition-colors">{m.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-6 line-clamp-3 leading-relaxed">
+                      {m.description || "Leading international healthcare provider committed to clinical excellence and patient care."}
+                    </p>
+                    
+                    <div className="mt-auto space-y-4">
+                      <div className="flex flex-wrap gap-2">
+                        {m.specialties.slice(0, 3).map(s => (
+                          <span key={s} className="text-[10px] uppercase tracking-widest px-2 py-1 bg-secondary rounded text-muted-foreground border border-border/50">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      {m.link ? (
+                        <Button asChild variant="outlineGold" size="sm" className="w-full">
+                          <a href={m.link} target="_blank" rel="noopener noreferrer">
+                            Visit Hospital <Globe className="w-3.5 h-3.5 ml-2" />
+                          </a>
+                        </Button>
+                      ) : (
+                        <Button asChild variant="outlineGold" size="sm" className="w-full">
+                          <Link to="/booking?type=medical">Enquire About Care</Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>

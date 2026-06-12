@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { ArrowLeft, ArrowRight, Check, Copy, GraduationCap, HeartPulse, Plane, Sparkles, Globe2 } from "lucide-react";
 import { toast } from "sonner";
@@ -37,6 +37,8 @@ export default function Booking() {
   const [step, setStep] = useState(1);
   const [type, setType] = useState<BookingType | null>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   
   // Separate state for each service type
   const [umrahDetails, setUmrahDetails] = useState({ fullName: "", email: "", phone: "", notes: "" });
@@ -202,7 +204,13 @@ export default function Booking() {
     return { label: "Medical Tourism Consultation", price: 0, sub: "Case review and travel planning consultation" };
   }, [type, pkgId, selectedDepartureId, hajjPackage, selectedDeparture, umrahTiers, travelTiers]);
 
-  const next = () => setStep((s) => Math.min(s + 1, 4));
+  const next = () => {
+    if (step === 2 && !user) {
+      navigate("/auth", { state: { from: location.pathname + location.search } });
+      return;
+    }
+    setStep((s) => Math.min(s + 1, 4));
+  };
   const back = () => setStep((s) => Math.max(s - 1, 1));
 
   const submit = async () => {
@@ -235,7 +243,15 @@ export default function Booking() {
           contact_phone: details.phone,
           notes: details.notes || null,
           package_id: null,
-          metadata: { type },
+          metadata: {
+            type,
+            departure: selectedDeparture ? {
+              id: selectedDeparture.id,
+              label: selectedDeparture.label,
+              depart: selectedDeparture.depart,
+              ret: selectedDeparture.ret
+            } : undefined
+          },
         }),
       });
 
