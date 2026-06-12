@@ -57,7 +57,11 @@ export default function StudyOpportunityDetails() {
       {/* Hero */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0">
-          <img src={scholarship.imageUrl || studyAbroad} alt={scholarship.title} className="w-full h-full object-cover object-top" />
+          <img
+            src={scholarship.imageUrl || studyAbroad}
+            alt={scholarship.title}
+            className="w-full h-full object-cover object-top"
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-background/85 via-background/55 to-background/20" />
         </div>
         <div className="container-luxe relative">
