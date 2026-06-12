@@ -5,6 +5,8 @@ import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { getMedicalAffiliations, type MedicalAffiliation } from "@/lib/schedules";
 import plane from "@/assets/plane.jpg";
+import medicalApollo from "@/assets/medical-apollo.jpg";
+import medicalKings from "@/assets/medical-kings.jpg";
 
 const benefits = [
   "Pre-travel medical coordination",
