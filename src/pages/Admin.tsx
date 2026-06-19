@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { formatNGN } from "@/data/packages";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
-import { getUmrahDepartures, upsertUmrahDeparture, deleteUmrahDeparture, getHajjPackage, upsertHajjPackage, getPackageTiers, upsertPackageTier, getTravelDepartures, upsertTravelDeparture, deleteTravelDeparture, getBusinessDepartures, upsertBusinessDeparture, deleteBusinessDeparture, getScholarships, upsertScholarship, deleteScholarship, getMedicalAffiliations, upsertMedicalAffiliation, deleteMedicalAffiliation, type PackageTier, type TierService, type Scholarship, type MedicalAffiliation } from "@/lib/schedules";
+import { getUmrahDepartures, upsertUmrahDeparture, deleteUmrahDeparture, getHajjPackage, upsertHajjPackage, getPackageTiers, upsertPackageTier, getTravelDepartures, upsertTravelDeparture, deleteTravelDeparture, getScholarships, upsertScholarship, deleteScholarship, getMedicalAffiliations, upsertMedicalAffiliation, deleteMedicalAffiliation, type PackageTier, type TierService, type Scholarship, type MedicalAffiliation } from "@/lib/schedules";
 
 type Inquiry = {
   id: string;
@@ -65,14 +66,18 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [departures, setDepartures] = useState<any[]>([]);
   const [travelDepartures, setTravelDepartures] = useState<any[]>([]);
-  const [businessDepartures, setBusinessDepartures] = useState<any[]>([]);
   const [departureError, setDepartureError] = useState<string | null>(null);
-  const [depForm, setDepForm] = useState({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Kano (KAN)" });
-  const [travelDepForm, setTravelDepForm] = useState({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" });
-  const [businessDepForm, setBusinessDepForm] = useState({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" });
+  const [activeDepTab, setActiveDepTab] = useState<"umrah" | "travel">("umrah");
+  const [depForm, setDepForm] = useState({
+    id: "",
+    type: "umrah" as "umrah" | "travel",
+    label: "",
+    depart: "",
+    ret: "",
+    seatsLeft: "0",
+    departureCity: "Kano (KAN)",
+  });
   const [depLoading, setDepLoading] = useState(false);
-  const [travelDepLoading, setTravelDepLoading] = useState(false);
-  const [businessDepLoading, setBusinessDepLoading] = useState(false);
   const [hajjPackage, setHajjPackage] = useState<any>(null);
   const [hajjForm, setHajjForm] = useState({ title: "", departRoute: "", returnRoute: "", departDate: "", returnDate: "", price: "0", seatsLeft: "0" });
   const [hajjLoading, setHajjLoading] = useState(false);
@@ -147,18 +152,16 @@ export default function Admin() {
     ]);
 
     try {
-      const [d, h, t, tr, b, s, m] = await Promise.all([
+      const [d, h, t, tr, s, m] = await Promise.all([
         getUmrahDepartures(),
         getHajjPackage(),
         getPackageTiers("umrah"),
         getTravelDepartures(),
-        getBusinessDepartures(),
         getScholarships(),
         getMedicalAffiliations()
       ]);
       setDepartures(d as any[]);
       setTravelDepartures(tr as any[]);
-      setBusinessDepartures(b as any[]);
       setDepartureError(null);
       setHajjPackage(h as any);
       setPackageTiers(t);
@@ -178,7 +181,6 @@ export default function Admin() {
     } catch (err: any) {
       setDepartures([]);
       setTravelDepartures([]);
-      setBusinessDepartures([]);
       setDepartureError(err?.message ?? "Unable to load data");
     }
 
@@ -476,106 +478,339 @@ export default function Admin() {
         )}
       </div>
     </div>
-  );
+  );  const resetDepForm = (type?: "umrah" | "travel") => {
+    const newType = type || activeDepTab;
+    setDepForm({
+      id: "",
+      type: newType,
+      label: "",
+      depart: "",
+      ret: "",
+      seatsLeft: "0",
+      departureCity: newType === "umrah" ? "Kano (KAN)" : "Lagos (LOS)",
+    });
+  };
 
-  const renderDepartures = () => (
-    <div className="space-y-10 animate-fade-in">
-      {departureError && (
-        <div className="glass-card rounded-xl p-4 border border-destructive/20 text-sm text-destructive bg-destructive/5">
-          Unable to load departures: {departureError}
-        </div>
-      )}
-      <div className="grid gap-8 lg:grid-cols-[1.5fr,1fr]">
-        {/* Umrah Departures */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-2xl">Umrah Departures</h2>
-            <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase tracking-widest" onClick={() => setDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Kano (KAN)" })}>
-              New Departure
-            </Button>
+  const handleDepSubmit = async () => {
+    if (!depForm.label || !depForm.depart || !depForm.ret) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+    setDepLoading(true);
+    try {
+      const payload = {
+        id: depForm.id || undefined,
+        label: depForm.label,
+        depart: depForm.depart,
+        ret: depForm.ret,
+        seatsLeft: Number(depForm.seatsLeft),
+        departureCity: depForm.departureCity,
+      };
+
+      if (depForm.type === "umrah") {
+        await upsertUmrahDeparture(payload as any);
+        const updated = await getUmrahDepartures();
+        setDepartures(updated as any[]);
+      } else if (depForm.type === "travel") {
+        await upsertTravelDeparture(payload as any);
+        const updated = await getTravelDepartures();
+        setTravelDepartures(updated as any[]);
+      }
+
+      toast.success(depForm.id ? "Departure updated successfully" : "Departure added successfully");
+      resetDepForm(depForm.type);
+    } catch (err: any) {
+      toast.error(`Failed to save departure: ${err.message}`);
+    } finally {
+      setDepLoading(false);
+    }
+  };
+
+  const handleDepDelete = async (id: string, type: "umrah" | "travel") => {
+    if (!confirm("Are you sure you want to delete this departure?")) return;
+    setDepLoading(true);
+    try {
+      if (type === "umrah") {
+        await deleteUmrahDeparture(id);
+        const updated = await getUmrahDepartures();
+        setDepartures(updated as any[]);
+      } else if (type === "travel") {
+        await deleteTravelDeparture(id);
+        const updated = await getTravelDepartures();
+        setTravelDepartures(updated as any[]);
+      }
+      toast.success("Departure deleted successfully");
+      if (depForm.id === id) {
+        resetDepForm(type);
+      }
+    } catch (err: any) {
+      toast.error(`Failed to delete departure: ${err.message}`);
+    } finally {
+      setDepLoading(false);
+    }
+  };
+
+  const renderDepartures = () => {
+    // Determine which list to display
+    let currentDeps: any[] = [];
+    if (activeDepTab === "umrah") currentDeps = departures;
+    else if (activeDepTab === "travel") currentDeps = travelDepartures;
+
+    return (
+      <div className="space-y-10 animate-fade-in">
+        {departureError && (
+          <div className="glass-card rounded-xl p-4 border border-destructive/20 text-sm text-destructive bg-destructive/5">
+            Unable to load departures: {departureError}
           </div>
-
-          <div className="glass-card rounded-xl p-1 overflow-hidden">
-            {departures.length === 0 ? (
-              <div className="p-12 text-center text-muted-foreground italic text-sm">
-                No active departures found.
+        )}
+        <div className="grid gap-8 lg:grid-cols-[1.5fr,1fr]">
+          {/* Left Column: Active Departures List & Hajj Configuration */}
+          <div className="space-y-8">
+            {/* Active Departures List Card */}
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="font-display text-2xl">Active Departures</h2>
+                  <p className="text-xs text-muted-foreground mt-1">Manage scheduled departure dates and seat capacities</p>
+                </div>
+                <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase tracking-widest self-start sm:self-auto" onClick={() => resetDepForm(activeDepTab)}>
+                  <Plus className="w-3.5 h-3.5 mr-1" /> New Departure
+                </Button>
               </div>
-            ) : (
-              <div className="divide-y divide-border/40">
-                {departures.map((d) => (
-                  <div key={d.id} className="p-4 flex items-center justify-between hover:bg-white/[0.01] transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold">
-                        <Calendar className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="font-display text-lg">{d.label || "Untitled"}</div>
-                        <div className="text-[11px] text-muted-foreground flex items-center gap-2">
-                          {new Date(d.depart).toLocaleDateString()} <ChevronRight className="w-3 h-3" /> {new Date(d.ret).toLocaleDateString()}
+
+              {/* Sub-tabs pills */}
+              <div className="flex gap-2 border-b border-border/40 pb-2">
+                <Button
+                  size="sm"
+                  variant={activeDepTab === "umrah" ? "gold" : "ghost"}
+                  className="text-xs h-8"
+                  onClick={() => {
+                    setActiveDepTab("umrah");
+                    if (!depForm.id) resetDepForm("umrah");
+                  }}
+                >
+                  Umrah
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeDepTab === "travel" ? "gold" : "ghost"}
+                  className="text-xs h-8"
+                  onClick={() => {
+                    setActiveDepTab("travel");
+                    if (!depForm.id) resetDepForm("travel");
+                  }}
+                >
+                  Travel & Visas
+                </Button>
+              </div>
+
+              <div className="glass-card rounded-xl p-1 overflow-hidden">
+                {currentDeps.length === 0 ? (
+                  <div className="p-12 text-center text-muted-foreground italic text-sm">
+                    No active {activeDepTab === "travel" ? "Travel" : "Umrah"} departures found.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border/40">
+                    {currentDeps.map((d) => (
+                      <div key={d.id} className="p-4 flex items-center justify-between hover:bg-white/[0.01] transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold">
+                            <Calendar className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="font-display text-lg">{d.label || "Untitled"}</div>
+                            <div className="text-[11px] text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                              <span className="font-medium text-foreground">{d.departureCity}</span>
+                              <span className="text-muted-foreground/60">•</span>
+                              <span>{new Date(d.depart).toLocaleDateString()}</span>
+                              <ChevronRight className="w-3 h-3 inline text-muted-foreground/60" />
+                              <span>{new Date(d.ret).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right hidden sm:block">
+                            <div className="text-sm font-medium">{d.seatsLeft}</div>
+                            <div className="text-[9px] uppercase tracking-tighter text-muted-foreground font-bold">Seats Left</div>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
+                              setDepForm({
+                                id: d.id,
+                                type: activeDepTab,
+                                label: d.label || "",
+                                depart: d.depart,
+                                ret: d.ret,
+                                seatsLeft: String(d.seatsLeft ?? 0),
+                                departureCity: d.departureCity || (activeDepTab === "umrah" ? "Kano (KAN)" : "Lagos (LOS)"),
+                              });
+                            }}>
+                              <SettingsIcon className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={() => handleDepDelete(d.id, activeDepTab)}>
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right hidden sm:block">
-                        <div className="text-sm font-medium">{d.seatsLeft}</div>
-                        <div className="text-[9px] uppercase tracking-tighter text-muted-foreground font-bold">Seats Left</div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
-                          setDepForm({
-                            id: d.id,
-                            label: d.label || "",
-                            depart: d.depart,
-                            ret: d.ret,
-                            seatsLeft: String(d.seatsLeft ?? 0),
-                            departureCity: d.departureCity || "Kano (KAN)",
-                          });
-                        }}>
-                          <SettingsIcon className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={async () => {
-                          if (confirm("Delete this departure?")) {
-                            setDepLoading(true);
-                            await deleteUmrahDeparture(d.id);
-                            const d2 = await getUmrahDepartures();
-                            setDepartures(d2 as any[]);
-                            setDepLoading(false);
-                            toast.success("Departure removed");
-                          }
-                        }}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
-            )}
+            </div>
+
+            {/* Hajj Package */}
+            <div className="space-y-6 border-t border-border/40 pt-8">
+              <div>
+                <h2 className="font-display text-2xl">Hajj Package Configuration</h2>
+                <p className="text-xs text-muted-foreground mt-1">Configure departure details and route pricing for the annual Hajj season</p>
+              </div>
+              <div className="glass-card rounded-xl p-6 border-t-2 border-t-gold space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Title</Label>
+                  <Input
+                    value={hajjForm.title}
+                    onChange={(e) => setHajjForm((s) => ({ ...s, title: e.target.value }))}
+                    placeholder="e.g. Premium Hajj Package 2026"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Depart Route</Label>
+                    <Input
+                      value={hajjForm.departRoute}
+                      onChange={(e) => setHajjForm((s) => ({ ...s, departRoute: e.target.value }))}
+                      placeholder="LOS - JED"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Return Route</Label>
+                    <Input
+                      value={hajjForm.returnRoute}
+                      onChange={(e) => setHajjForm((s) => ({ ...s, returnRoute: e.target.value }))}
+                      placeholder="MED - LOS"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Depart Date</Label>
+                    <Input
+                      type="date"
+                      value={hajjForm.departDate}
+                      onChange={(e) => setHajjForm((s) => ({ ...s, departDate: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Return Date</Label>
+                    <Input
+                      type="date"
+                      value={hajjForm.returnDate}
+                      onChange={(e) => setHajjForm((s) => ({ ...s, returnDate: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Price (NGN)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={hajjForm.price}
+                      onChange={(e) => setHajjForm((s) => ({ ...s, price: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Seats Left</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={hajjForm.seatsLeft}
+                      onChange={(e) => setHajjForm((s) => ({ ...s, seatsLeft: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="pt-4">
+                  <Button variant="gold" className="w-full" onClick={async () => {
+                    setHajjLoading(true);
+                    try {
+                      const payload = {
+                        ...hajjPackage,
+                        title: hajjForm.title,
+                        departRoute: hajjForm.departRoute,
+                        returnRoute: hajjForm.returnRoute,
+                        departDate: hajjForm.departDate,
+                        returnDate: hajjForm.returnDate,
+                        price: Number(hajjForm.price),
+                        seatsLeft: Number(hajjForm.seatsLeft),
+                      };
+                      const updated = await upsertHajjPackage(payload as any);
+                      setHajjPackage(updated);
+                      toast.success("Hajj configuration updated");
+                    } catch (err: any) {
+                      toast.error(`Failed to update Hajj: ${err.message}`);
+                    } finally {
+                      setHajjLoading(false);
+                    }
+                  }} disabled={hajjLoading}>
+                    {hajjLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+                    Sync Hajj Package
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="glass-card rounded-xl p-6 border-t-2 border-t-gold">
-            <h3 className="text-sm font-bold uppercase tracking-[0.2em] mb-4 text-gold">
-              {depForm.id ? "Edit Departure" : "Add New Departure"}
-            </h3>
-            <div className="grid sm:grid-cols-2 gap-4">
+          {/* Right Column: Unified Add/Edit Departure Form */}
+          <div className="space-y-6">
+            <div className="glass-card rounded-xl p-6 border-t-2 border-t-gold space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-[0.2em] mb-2 text-gold">
+                {depForm.id ? "Edit Departure" : "Add New Departure"}
+              </h3>
+              
+              <div className="space-y-2">
+                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Departure Category</Label>
+                <Select
+                  value={depForm.type}
+                  onValueChange={(val: "umrah" | "travel") => {
+                    setDepForm((prev) => ({
+                      ...prev,
+                      type: val,
+                      departureCity: prev.id ? prev.departureCity : (val === "umrah" ? "Kano (KAN)" : "Lagos (LOS)"),
+                    }));
+                  }}
+                  disabled={!!depForm.id}
+                >
+                  <SelectTrigger className="w-full bg-background border border-input">
+                    <SelectValue placeholder="Select departure category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="umrah">Umrah</SelectItem>
+                    <SelectItem value="travel">Travel & Visas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="dep-label" className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Label</Label>
                 <Input
                   id="dep-label"
                   value={depForm.label}
                   onChange={(e) => setDepForm((s) => ({ ...s, label: e.target.value }))}
-                  placeholder="e.g. Ramadan Special 2026"
+                  placeholder={depForm.type === "umrah" ? "e.g. Ramadan Special 2026" : "e.g. Business Trip June"}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="dep-city" className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Departure City</Label>
                 <Input
                   id="dep-city"
                   value={depForm.departureCity}
                   onChange={(e) => setDepForm((s) => ({ ...s, departureCity: e.target.value }))}
-                  placeholder="e.g. Kano (KAN)"
+                  placeholder={depForm.type === "umrah" ? "e.g. Kano (KAN)" : "e.g. Lagos (LOS)"}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="dep-seats" className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Available Seats</Label>
                 <Input
@@ -587,6 +822,7 @@ export default function Admin() {
                   placeholder="Seats"
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="dep-start" className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Departure Date</Label>
                 <Input
@@ -596,6 +832,7 @@ export default function Admin() {
                   onChange={(e) => setDepForm((s) => ({ ...s, depart: e.target.value }))}
                 />
               </div>
+
               <div className="space-y-2">
                 <Label htmlFor="dep-end" className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Return Date</Label>
                 <Input
@@ -605,362 +842,24 @@ export default function Admin() {
                   onChange={(e) => setDepForm((s) => ({ ...s, ret: e.target.value }))}
                 />
               </div>
-            </div>
-            <div className="mt-6 flex gap-3">
-              <Button variant="gold" className="flex-1" onClick={async () => {
-                if (!depForm.label || !depForm.depart || !depForm.ret) {
-                  toast.error("Please fill all required fields");
-                  return;
-                }
-                setDepLoading(true);
-                const payload = {
-                  id: depForm.id || undefined,
-                  label: depForm.label,
-                  depart: depForm.depart,
-                  ret: depForm.ret,
-                  seatsLeft: Number(depForm.seatsLeft),
-                  departureCity: depForm.departureCity,
-                };
-                await upsertUmrahDeparture(payload as any);
-                const d2 = await getUmrahDepartures();
-                setDepartures(d2 as any[]);
-                setDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Kano (KAN)" });
-                setDepLoading(false);
-                toast.success(depForm.id ? "Departure updated" : "Departure added");
-              }} disabled={depLoading}>
-                {depLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
-                {depForm.id ? "Save Changes" : "Create Departure"}
-              </Button>
-              {depForm.id && (
-                <Button variant="outline" onClick={() => setDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Kano (KAN)" })}>
-                  Cancel
+
+              <div className="mt-6 flex flex-col sm:flex-row gap-3 pt-2">
+                <Button variant="gold" className="flex-1" onClick={handleDepSubmit} disabled={depLoading}>
+                  {depLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+                  {depForm.id ? "Save Changes" : "Create Departure"}
                 </Button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Travel Departures */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-2xl">Travel Departures</h2>
-            <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase tracking-widest" onClick={() => setTravelDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" })}>
-              New Departure
-            </Button>
-          </div>
-
-          <div className="glass-card rounded-xl p-1 overflow-hidden">
-            {travelDepartures.length === 0 ? (
-              <div className="p-12 text-center text-muted-foreground italic text-sm">
-                No active travel departures found.
+                {depForm.id && (
+                  <Button variant="outline" onClick={() => resetDepForm(activeDepTab)}>
+                    Cancel
+                  </Button>
+                )}
               </div>
-            ) : (
-              <div className="divide-y divide-border/40">
-                {travelDepartures.map((d) => (
-                  <div key={d.id} className="p-4 flex items-center justify-between hover:bg-white/[0.01] transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold">
-                        <Calendar className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="font-display text-lg">{d.label || "Untitled"}</div>
-                        <div className="text-[11px] text-muted-foreground flex items-center gap-2">
-                          {new Date(d.depart).toLocaleDateString()} <ChevronRight className="w-3 h-3" /> {new Date(d.ret).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right hidden sm:block">
-                        <div className="text-sm font-medium">{d.seatsLeft}</div>
-                        <div className="text-[9px] uppercase tracking-tighter text-muted-foreground font-bold">Seats Left</div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
-                          setTravelDepForm({ id: d.id, label: d.label || "", depart: d.depart, ret: d.ret, seatsLeft: String(d.seatsLeft ?? 0), departureCity: d.departureCity || "Lagos (LOS)" });
-                        }}>
-                          <SettingsIcon className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={async () => {
-                          if (confirm("Delete this departure?")) {
-                            setTravelDepLoading(true);
-                            await deleteTravelDeparture(d.id);
-                            const t2 = await getTravelDepartures();
-                            setTravelDepartures(t2 as any[]);
-                            setTravelDepLoading(false);
-                            toast.success("Departure removed");
-                          }
-                        }}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="glass-card rounded-xl p-6 border-t-2 border-t-gold">
-            <h3 className="text-sm font-bold uppercase tracking-[0.2em] mb-4 text-gold">
-              {travelDepForm.id ? "Edit Travel Departure" : "Add New Travel Departure"}
-            </h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Label</Label>
-                <Input value={travelDepForm.label} onChange={(e) => setTravelDepForm((s) => ({ ...s, label: e.target.value }))} placeholder="e.g. Business Trip June" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Departure City</Label>
-                <Input value={travelDepForm.departureCity} onChange={(e) => setTravelDepForm((s) => ({ ...s, departureCity: e.target.value }))} placeholder="e.g. Lagos (LOS)" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Available Seats</Label>
-                <Input type="number" min="0" value={travelDepForm.seatsLeft} onChange={(e) => setTravelDepForm((s) => ({ ...s, seatsLeft: e.target.value }))} placeholder="Seats" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Departure Date</Label>
-                <Input type="date" value={travelDepForm.depart} onChange={(e) => setTravelDepForm((s) => ({ ...s, depart: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Return Date</Label>
-                <Input type="date" value={travelDepForm.ret} onChange={(e) => setTravelDepForm((s) => ({ ...s, ret: e.target.value }))} />
-              </div>
-            </div>
-            <div className="mt-6 flex gap-3">
-              <Button variant="gold" className="flex-1" onClick={async () => {
-                if (!travelDepForm.label || !travelDepForm.depart || !travelDepForm.ret) {
-                  toast.error("Please fill all required fields");
-                  return;
-                }
-                setTravelDepLoading(true);
-                const payload = { id: travelDepForm.id || undefined, label: travelDepForm.label, depart: travelDepForm.depart, ret: travelDepForm.ret, seatsLeft: Number(travelDepForm.seatsLeft), departureCity: travelDepForm.departureCity };
-                await upsertTravelDeparture(payload as any);
-                const t2 = await getTravelDepartures();
-                setTravelDepartures(t2 as any[]);
-                setTravelDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" });
-                setTravelDepLoading(false);
-                toast.success(travelDepForm.id ? "Departure updated" : "Departure added");
-              }} disabled={travelDepLoading}>
-                {travelDepLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
-                {travelDepForm.id ? "Save Changes" : "Create Departure"}
-              </Button>
-              {travelDepForm.id && (
-                <Button variant="outline" onClick={() => setTravelDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" })}>
-                  Cancel
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Business Departures */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-2xl">Business Departures</h2>
-            <Button size="sm" variant="outline" className="h-8 text-[10px] uppercase tracking-widest" onClick={() => setBusinessDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" })}>
-              New Departure
-            </Button>
-          </div>
-
-          <div className="glass-card rounded-xl p-1 overflow-hidden">
-            {businessDepartures.length === 0 ? (
-              <div className="p-12 text-center text-muted-foreground italic text-sm">
-                No active business departures found.
-              </div>
-            ) : (
-              <div className="divide-y divide-border/40">
-                {businessDepartures.map((d) => (
-                  <div key={d.id} className="p-4 flex items-center justify-between hover:bg-white/[0.01] transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold">
-                        <Calendar className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="font-display text-lg">{d.label || "Untitled"}</div>
-                        <div className="text-[11px] text-muted-foreground flex items-center gap-2">
-                          {new Date(d.depart).toLocaleDateString()} <ChevronRight className="w-3 h-3" /> {new Date(d.ret).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right hidden sm:block">
-                        <div className="text-sm font-medium">{d.seatsLeft}</div>
-                        <div className="text-[9px] uppercase tracking-tighter text-muted-foreground font-bold">Seats Left</div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
-                          setBusinessDepForm({ id: d.id, label: d.label || "", depart: d.depart, ret: d.ret, seatsLeft: String(d.seatsLeft ?? 0), departureCity: d.departureCity || "Lagos (LOS)" });
-                        }}>
-                          <SettingsIcon className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive/70 hover:text-destructive" onClick={async () => {
-                          if (confirm("Delete this departure?")) {
-                            setBusinessDepLoading(true);
-                            await deleteBusinessDeparture(d.id);
-                            const b2 = await getBusinessDepartures();
-                            setBusinessDepartures(b2 as any[]);
-                            setBusinessDepLoading(false);
-                            toast.success("Departure removed");
-                          }
-                        }}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="glass-card rounded-xl p-6 border-t-2 border-t-gold">
-            <h3 className="text-sm font-bold uppercase tracking-[0.2em] mb-4 text-gold">
-              {businessDepForm.id ? "Edit Business Departure" : "Add New Business Departure"}
-            </h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Label</Label>
-                <Input value={businessDepForm.label} onChange={(e) => setBusinessDepForm((s) => ({ ...s, label: e.target.value }))} placeholder="e.g. Corporate Retreat" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Departure City</Label>
-                <Input value={businessDepForm.departureCity} onChange={(e) => setBusinessDepForm((s) => ({ ...s, departureCity: e.target.value }))} placeholder="e.g. Lagos (LOS)" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Available Seats</Label>
-                <Input type="number" min="0" value={businessDepForm.seatsLeft} onChange={(e) => setBusinessDepForm((s) => ({ ...s, seatsLeft: e.target.value }))} placeholder="Seats" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Departure Date</Label>
-                <Input type="date" value={businessDepForm.depart} onChange={(e) => setBusinessDepForm((s) => ({ ...s, depart: e.target.value }))} />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Return Date</Label>
-                <Input type="date" value={businessDepForm.ret} onChange={(e) => setBusinessDepForm((s) => ({ ...s, ret: e.target.value }))} />
-              </div>
-            </div>
-            <div className="mt-6 flex gap-3">
-              <Button variant="gold" className="flex-1" onClick={async () => {
-                if (!businessDepForm.label || !businessDepForm.depart || !businessDepForm.ret) {
-                  toast.error("Please fill all required fields");
-                  return;
-                }
-                setBusinessDepLoading(true);
-                const payload = { id: businessDepForm.id || undefined, label: businessDepForm.label, depart: businessDepForm.depart, ret: businessDepForm.ret, seatsLeft: Number(businessDepForm.seatsLeft), departureCity: businessDepForm.departureCity };
-                await upsertBusinessDeparture(payload as any);
-                const b2 = await getBusinessDepartures();
-                setBusinessDepartures(b2 as any[]);
-                setBusinessDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" });
-                setBusinessDepLoading(false);
-                toast.success(businessDepForm.id ? "Departure updated" : "Departure added");
-              }} disabled={businessDepLoading}>
-                {businessDepLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
-                {businessDepForm.id ? "Save Changes" : "Create Departure"}
-              </Button>
-              {businessDepForm.id && (
-                <Button variant="outline" onClick={() => setBusinessDepForm({ id: "", label: "", depart: "", ret: "", seatsLeft: "0", departureCity: "Lagos (LOS)" })}>
-                  Cancel
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Hajj Package */}
-        <div className="space-y-6">
-          <h2 className="font-display text-2xl">Hajj Package Configuration</h2>
-          <div className="glass-card rounded-xl p-6 border-t-2 border-t-gold space-y-4">
-            <div className="space-y-2">
-              <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Title</Label>
-              <Input
-                value={hajjForm.title}
-                onChange={(e) => setHajjForm((s) => ({ ...s, title: e.target.value }))}
-                placeholder="e.g. Premium Hajj Package 2026"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Depart Route</Label>
-                <Input
-                  value={hajjForm.departRoute}
-                  onChange={(e) => setHajjForm((s) => ({ ...s, departRoute: e.target.value }))}
-                  placeholder="LOS - JED"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Return Route</Label>
-                <Input
-                  value={hajjForm.returnRoute}
-                  onChange={(e) => setHajjForm((s) => ({ ...s, returnRoute: e.target.value }))}
-                  placeholder="MED - LOS"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Depart Date</Label>
-                <Input
-                  type="date"
-                  value={hajjForm.departDate}
-                  onChange={(e) => setHajjForm((s) => ({ ...s, departDate: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Return Date</Label>
-                <Input
-                  type="date"
-                  value={hajjForm.returnDate}
-                  onChange={(e) => setHajjForm((s) => ({ ...s, returnDate: e.target.value }))}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Price (NGN)</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={hajjForm.price}
-                  onChange={(e) => setHajjForm((s) => ({ ...s, price: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Seats Left</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  value={hajjForm.seatsLeft}
-                  onChange={(e) => setHajjForm((s) => ({ ...s, seatsLeft: e.target.value }))}
-                />
-              </div>
-            </div>
-            <div className="pt-4">
-              <Button variant="gold" className="w-full" onClick={async () => {
-                setHajjLoading(true);
-                const payload = {
-                  ...hajjPackage,
-                  title: hajjForm.title,
-                  departRoute: hajjForm.departRoute,
-                  returnRoute: hajjForm.returnRoute,
-                  departDate: hajjForm.departDate,
-                  returnDate: hajjForm.returnDate,
-                  price: Number(hajjForm.price),
-                  seatsLeft: Number(hajjForm.seatsLeft),
-                };
-                const updated = await upsertHajjPackage(payload as any);
-                setHajjPackage(updated);
-                toast.success("Hajj configuration updated");
-                setHajjLoading(false);
-              }} disabled={hajjLoading}>
-                {hajjLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
-                Sync Hajj Package
-              </Button>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   function renderTiers() {
     const serviceLabel = tierService === "umrah" ? "Umrah" : "Travel";
