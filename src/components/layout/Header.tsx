@@ -1,6 +1,9 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { Menu, X, LogOut, User, ChevronDown } from "lucide-react";
+import {
+  Menu, X, LogOut, User, ChevronDown,
+  GraduationCap, Globe, HeartPulse, Compass, MapPin,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import najmaLogo from "@/assets/najma.png";
@@ -8,11 +11,11 @@ import TopBar from "@/components/layout/TopBar";
 import { useAuth } from "@/hooks/useAuth";
 
 const serviceLinks = [
-  { to: "/study-abroad", label: "Study Abroad" },
-  { to: "/travel-visas", label: "Travel & Visas" },
-  { to: "/medical-tourism", label: "Medical Tourism" },
-  { to: "/hajj", label: "Hajj" },
-  { to: "/umrah", label: "Umrah" },
+  { to: "/study-abroad", label: "Study Abroad", icon: GraduationCap },
+  { to: "/travel-visas", label: "Travel & Visas", icon: Globe },
+  { to: "/medical-tourism", label: "Medical Tourism", icon: HeartPulse },
+  { to: "/hajj", label: "Hajj", icon: Compass },
+  { to: "/umrah", label: "Umrah", icon: MapPin },
 ];
 
 export default function Header() {
@@ -116,14 +119,15 @@ export default function Header() {
                       to={l.to}
                       className={({ isActive }) =>
                         cn(
-                          "block px-5 py-3 text-sm transition-colors border-b border-border/30 last:border-b-0",
+                          "flex items-center gap-3 px-5 py-3 text-sm transition-colors border-b border-border/30 last:border-b-0",
                           isActive
                             ? "text-gold bg-gold/5"
                             : "text-foreground/80 hover:text-foreground hover:bg-muted/30"
                         )
                       }
                     >
-                      {l.label}
+                      <l.icon className="w-4 h-4 shrink-0" />
+                      <span>{l.label}</span>
                     </NavLink>
                   ))}
                 </div>
@@ -219,11 +223,12 @@ export default function Header() {
                       to={l.to}
                       className={({ isActive }) =>
                         cn(
-                          "block py-2.5 px-4 text-sm transition-colors",
+                          "flex items-center gap-3 py-2.5 px-4 text-sm transition-colors",
                           isActive ? "text-gold" : "text-foreground/70 hover:text-foreground"
                         )
                       }
                     >
+                      <l.icon className="w-4 h-4 shrink-0" />
                       {l.label}
                     </NavLink>
                   ))}
