@@ -1,6 +1,9 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { Menu, X, LogOut, User, ChevronDown } from "lucide-react";
+import {
+  Menu, X, LogOut, User, ChevronDown,
+  GraduationCap, Globe, HeartPulse, Compass, MapPin,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import najmaLogo from "@/assets/najma.png";
@@ -8,11 +11,11 @@ import TopBar from "@/components/layout/TopBar";
 import { useAuth } from "@/hooks/useAuth";
 
 const serviceLinks = [
-  { to: "/study-abroad", label: "Study Abroad" },
-  { to: "/travel-visas", label: "Travel & Visas" },
-  { to: "/medical-tourism", label: "Medical Tourism" },
-  { to: "/hajj", label: "Hajj" },
-  { to: "/umrah", label: "Umrah" },
+  { to: "/study-abroad", label: "Study Abroad", icon: GraduationCap },
+  { to: "/travel-visas", label: "Travel & Visas", icon: Globe },
+  { to: "/medical-tourism", label: "Medical Tourism", icon: HeartPulse },
+  { to: "/hajj", label: "Hajj", icon: Compass },
+  { to: "/umrah", label: "Umrah", icon: MapPin },
 ];
 
 export default function Header() {
