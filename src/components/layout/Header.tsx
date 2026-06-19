@@ -119,14 +119,15 @@ export default function Header() {
                       to={l.to}
                       className={({ isActive }) =>
                         cn(
-                          "block px-5 py-3 text-sm transition-colors border-b border-border/30 last:border-b-0",
+                          "flex items-center gap-3 px-5 py-3 text-sm transition-colors border-b border-border/30 last:border-b-0",
                           isActive
                             ? "text-gold bg-gold/5"
                             : "text-foreground/80 hover:text-foreground hover:bg-muted/30"
                         )
                       }
                     >
-                      {l.label}
+                      <l.icon className="w-4 h-4 shrink-0" />
+                      <span>{l.label}</span>
                     </NavLink>
                   ))}
                 </div>
