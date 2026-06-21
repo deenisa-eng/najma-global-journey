@@ -102,11 +102,11 @@ const Index = () => {
           {/* Quick links */}
           <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-5 gap-3 max-w-5xl">
             {[
+              { label: "Umrah Packages", to: "/umrah", icon: Plane },
+              { label: "Hajj Tickets", to: "/hajj", icon: Sparkles },
               { label: "Study Abroad", to: "/study-abroad", icon: GraduationCap },
               { label: "Medical Tourism", to: "/medical-tourism", icon: HeartPulse },
               { label: "Business & Tourism", to: "/travel-visas", icon: Globe2 },
-              { label: "Hajj Tickets", to: "/hajj", icon: Sparkles },
-              { label: "Umrah Packages", to: "/umrah", icon: Plane },
             ].map((q) => (
               <Link
                 key={q.label}
