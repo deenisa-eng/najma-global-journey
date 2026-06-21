@@ -18,11 +18,11 @@ import { cn } from "@/lib/utils";
 import { automateBooking, type AutomationResponse } from "@/lib/amadeusAutomation";
 
 const SERVICES: { id: BookingType; title: string; desc: string; icon: any }[] = [
+  { id: "umrah", title: "Umrah", desc: "Year-round departures", icon: Plane },
+  { id: "hajj", title: "Hajj", desc: "31-night premium pilgrimage", icon: Sparkles },
   { id: "study", title: "Study Abroad", desc: "Admissions consulting & placement", icon: GraduationCap },
   { id: "medical", title: "Medical Tourism", desc: "International treatment planning & travel support", icon: HeartPulse },
   { id: "travel", title: "Travel & Visas", desc: "Visas for business, tourism, and family visits", icon: Globe2 },
-  { id: "hajj", title: "Hajj", desc: "31-night premium pilgrimage", icon: Sparkles },
-  { id: "umrah", title: "Umrah", desc: "Year-round departures", icon: Plane },
 ];
 
 const detailsSchema = z.object({
