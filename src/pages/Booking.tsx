@@ -20,7 +20,7 @@ import { automateBooking, type AutomationResponse } from "@/lib/amadeusAutomatio
 const SERVICES: { id: BookingType; title: string; desc: string; icon: any }[] = [
   { id: "study", title: "Study Abroad", desc: "Admissions consulting & placement", icon: GraduationCap },
   { id: "medical", title: "Medical Tourism", desc: "International treatment planning & travel support", icon: HeartPulse },
-  { id: "travel", title: "Business & Tourism", desc: "Visas for business, tourism, and family visits", icon: Globe2 },
+  { id: "travel", title: "Travel & Visas", desc: "Visas for business, tourism, and family visits", icon: Globe2 },
   { id: "hajj", title: "Hajj", desc: "31-night premium pilgrimage", icon: Sparkles },
   { id: "umrah", title: "Umrah", desc: "Year-round departures", icon: Plane },
 ];
@@ -456,7 +456,7 @@ export default function Booking() {
               {type === "travel" && (
                 <div className="space-y-6">
                   <div className="glass-card rounded-sm p-7">
-                    <div className="font-display text-2xl mb-2">Business & Tourism Visas</div>
+                    <div className="font-display text-2xl mb-2">Travel & Visas</div>
                     <p className="text-sm text-muted-foreground">Travelling for business, a holiday, or visiting family? Our experts handle documentation and processing for major global destinations.</p>
                   </div>
 

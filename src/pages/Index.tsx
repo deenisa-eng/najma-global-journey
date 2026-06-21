@@ -42,7 +42,7 @@ const offerings = [
   },
   {
     tag: "05 — Global Travel",
-    title: "Business & Tourism",
+    title: "Travel & Visas",
     desc: "Visa processing and travel planning for business trips, family visits, and global tourism destinations.",
     image: travelVisas,
     to: "/travel-visas",
@@ -106,7 +106,7 @@ const Index = () => {
               { label: "Hajj Tickets", to: "/hajj", icon: Sparkles },
               { label: "Study Abroad", to: "/study-abroad", icon: GraduationCap },
               { label: "Medical Tourism", to: "/medical-tourism", icon: HeartPulse },
-              { label: "Business & Tourism", to: "/travel-visas", icon: Globe2 },
+              { label: "Travel & Visas", to: "/travel-visas", icon: Globe2 },
             ].map((q) => (
               <Link
                 key={q.label}
