@@ -13,11 +13,11 @@ import travelVisas from "@/assets/travel-visas.jpg";
 
 const offerings = [
   {
-    tag: "01 — Education",
-    title: "Study Abroad",
-    desc: "Curated admissions to globally accredited universities across medicine, engineering, AI and business.",
-    image: studyAbroad,
-    to: "/study-abroad",
+    tag: "01 — Sacred Travel",
+    title: "Umrah",
+    desc: "Year-round Umrah departures with elegant accommodation in Makkah & Madinah.",
+    image: madinah,
+    to: "/umrah",
   },
   {
     tag: "02 — Pilgrimage",
@@ -27,25 +27,25 @@ const offerings = [
     to: "/hajj",
   },
   {
-    tag: "03 — Sacred Travel",
-    title: "Umrah",
-    desc: "Year-round Umrah departures with elegant accommodation in Makkah & Madinah.",
-    image: madinah,
-    to: "/umrah",
+    tag: "03 — Education",
+    title: "Study Abroad",
+    desc: "Curated admissions to globally accredited universities across medicine, engineering, AI and business.",
+    image: studyAbroad,
+    to: "/study-abroad",
   },
   {
-    tag: "04 — Global Travel",
-    title: "Business & Tourism",
-    desc: "Visa processing and travel planning for business trips, family visits, and global tourism destinations.",
-    image: travelVisas,
-    to: "/travel-visas",
-  },
-  {
-    tag: "05 — Healthcare",
+    tag: "04 — Healthcare",
     title: "Medical Tourism",
     desc: "Coordinated international treatment journeys with hospital matching and end-to-end travel support.",
     image: plane,
     to: "/medical-tourism",
+  },
+  {
+    tag: "05 — Global Travel",
+    title: "Business & Tourism",
+    desc: "Visa processing and travel planning for business trips, family visits, and global tourism destinations.",
+    image: travelVisas,
+    to: "/travel-visas",
   },
 ];
 
@@ -102,11 +102,11 @@ const Index = () => {
           {/* Quick links */}
           <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-5 gap-3 max-w-5xl">
             {[
+              { label: "Umrah Packages", to: "/umrah", icon: Plane },
+              { label: "Hajj Tickets", to: "/hajj", icon: Sparkles },
               { label: "Study Abroad", to: "/study-abroad", icon: GraduationCap },
               { label: "Medical Tourism", to: "/medical-tourism", icon: HeartPulse },
               { label: "Business & Tourism", to: "/travel-visas", icon: Globe2 },
-              { label: "Hajj Tickets", to: "/hajj", icon: Sparkles },
-              { label: "Umrah Packages", to: "/umrah", icon: Plane },
             ].map((q) => (
               <Link
                 key={q.label}

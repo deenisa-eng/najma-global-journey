@@ -11,11 +11,11 @@ import TopBar from "@/components/layout/TopBar";
 import { useAuth } from "@/hooks/useAuth";
 
 const serviceLinks = [
-  { to: "/study-abroad", label: "Study Abroad", icon: GraduationCap },
-  { to: "/travel-visas", label: "Travel & Visas", icon: Globe },
-  { to: "/medical-tourism", label: "Medical Tourism", icon: HeartPulse },
-  { to: "/hajj", label: "Hajj", icon: Compass },
   { to: "/umrah", label: "Umrah", icon: MapPin },
+  { to: "/hajj", label: "Hajj", icon: Compass },
+  { to: "/study-abroad", label: "Study Abroad", icon: GraduationCap },
+  { to: "/medical-tourism", label: "Medical Tourism", icon: HeartPulse },
+  { to: "/travel-visas", label: "Travel & Visas", icon: Globe },
 ];
 
 export default function Header() {
