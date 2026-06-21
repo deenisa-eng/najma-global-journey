@@ -10,6 +10,8 @@ import madinah from "@/assets/madinah.jpg";
 import studyAbroad from "@/assets/study-abroad.jpg";
 import plane from "@/assets/plane.jpg";
 import travelVisas from "@/assets/travel-visas.jpg";
+import whyNajma from "@/assets/why-najma.jpg";
+import medicalTourism from "@/assets/medical-tourism.jpg";
 
 const offerings = [
   {
@@ -37,7 +39,7 @@ const offerings = [
     tag: "04 — Healthcare",
     title: "Medical Tourism",
     desc: "Coordinated international treatment journeys with hospital matching and end-to-end travel support.",
-    image: plane,
+    image: medicalTourism,
     to: "/medical-tourism",
   },
   {
@@ -124,34 +126,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* VALUES */}
-      <section className="py-24 sm:py-32">
-        <div className="container-luxe">
-          <div className="max-w-2xl mb-16">
-            <div className="eyebrow mb-4">Why Najma</div>
-            <h2 className="font-display text-4xl sm:text-5xl leading-tight">
-              An uncompromising standard for every traveller and student.
-            </h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map((v) => (
-              <div key={v.title} className="glass-card rounded-sm p-7 hover:border-gold/50 transition-all duration-500 group">
-                <div className="w-12 h-12 rounded-sm bg-gold/10 border border-gold/30 flex items-center justify-center mb-5 group-hover:bg-gold/20 transition-colors">
-                  <v.icon className="w-5 h-5 text-gold" />
-                </div>
-                <h3 className="font-display text-2xl mb-2">{v.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{v.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <StatsStrip />
-
-
       {/* OFFERINGS */}
-      <section className="py-24 sm:py-32 bg-gradient-navy">
+      <section className="py-24 sm:py-32">
         <div className="container-luxe">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
             <div className="max-w-xl">
@@ -163,33 +139,90 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-6">
-            {offerings.map((o, i) => (
+          <div className="flex flex-wrap justify-center gap-6">
+            {offerings.map((o) => (
               <Link
                 to={o.to}
                 key={o.title}
-                className="group relative overflow-hidden rounded-sm border border-border hover:border-gold/60 transition-all duration-700"
-                style={{ animationDelay: `${i * 120}ms` }}
+                className="group relative overflow-hidden rounded-xl border border-border hover:border-gold/60 hover:shadow-[0_8px_32px_-8px_hsl(16_92%_50%/0.25)] transition-all duration-500 bg-card flex flex-col w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)]"
               >
-                <div className="aspect-[3/4] overflow-hidden">
+                <div className="relative h-52 overflow-hidden">
                   <img
                     src={o.image}
                     alt={o.title}
                     loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-[1.4s] group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <span className="absolute top-4 left-4 text-[10px] uppercase tracking-[0.26em] font-semibold text-white/90 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
+                    {o.tag}
+                  </span>
                 </div>
-                <div className="absolute inset-x-0 bottom-0 p-7">
-                  <div className="text-[11px] uppercase tracking-[0.28em] text-gold mb-3">{o.tag}</div>
-                  <h3 className="font-display text-2xl mb-3">{o.title}</h3>
-                  <p className="text-xs text-muted-foreground mb-5 leading-relaxed">{o.desc}</p>
-                  <div className="inline-flex items-center gap-2 text-xs text-gold luxe-link">
-                    Discover <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                <div className="p-6 flex flex-col flex-1">
+                  <h3 className="font-display text-2xl mb-2 group-hover:text-gold transition-colors">{o.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">{o.desc}</p>
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gold border border-gold/40 rounded-full px-4 py-2 self-start group-hover:bg-gold group-hover:text-white transition-all duration-300">
+                    Explore <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
                   </div>
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <StatsStrip />
+
+      {/* VALUES */}
+      <section className="py-24 sm:py-32 bg-secondary/30">
+        <div className="container-luxe">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            {/* Left: content */}
+            <div>
+              <div className="eyebrow mb-4">Why Najma</div>
+              <h2 className="font-display text-4xl sm:text-5xl leading-tight mb-6">
+                An uncompromising standard for every traveller and student.
+              </h2>
+              <p className="text-muted-foreground mb-10 leading-relaxed">
+                From your first enquiry to the moment you return home, Najma Global is with you every step of the way — combining expertise, integrity, and genuine care.
+              </p>
+              <ul className="space-y-6 mb-10">
+                {values.map((v) => (
+                  <li key={v.title} className="flex items-start gap-4">
+                    <div className="w-11 h-11 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0 mt-0.5">
+                      <v.icon className="w-5 h-5 text-gold" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-foreground mb-0.5">{v.title}</div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{v.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <Button asChild variant="gold" size="lg">
+                <Link to="/booking">Start Your Journey <ArrowRight className="w-4 h-4" /></Link>
+              </Button>
+            </div>
+
+            {/* Right: image */}
+            <div className="relative hidden lg:block">
+              <div className="relative rounded-2xl overflow-hidden shadow-[0_30px_60px_-20px_hsl(232_40%_20%/0.2)]">
+                <img
+                  src={whyNajma}
+                  alt="Airplane wing at golden hour"
+                  className="w-full h-[580px] object-cover"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+              </div>
+              {/* floating stat badge */}
+              <div className="absolute -bottom-6 -left-6 bg-card border border-border rounded-xl px-6 py-4 shadow-lg">
+                <div className="font-display text-4xl text-gold leading-none mb-1">500+</div>
+                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Happy Travellers</div>
+              </div>
+              {/* gold accent line */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 rounded-xl border-2 border-gold/30 -z-10" />
+            </div>
           </div>
         </div>
       </section>

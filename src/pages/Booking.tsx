@@ -327,13 +327,13 @@ export default function Booking() {
         <div className="container-luxe max-w-4xl">
           {/* Step 1: choose service */}
           {step === 1 && (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
+            <div className="flex flex-wrap justify-center gap-4 animate-fade-in">
               {SERVICES.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => { setType(s.id); setPkgId(null); next(); }}
                   className={cn(
-                    "glass-card rounded-sm p-7 text-left hover:border-gold/60 transition-all group",
+                    "glass-card rounded-sm p-7 text-left hover:border-gold/60 transition-all group w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]",
                     type === s.id && "border-gold"
                   )}
                 >

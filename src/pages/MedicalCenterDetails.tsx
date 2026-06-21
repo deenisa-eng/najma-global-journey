@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { getMedicalAffiliations, type MedicalAffiliation } from "@/lib/schedules";
 import medicalApollo from "@/assets/medical-apollo.jpg";
 import medicalKings from "@/assets/medical-kings.jpg";
-import plane from "@/assets/plane.jpg";
+import medicalTourism from "@/assets/medical-tourism.jpg";
 
 function resolveImage(m: MedicalAffiliation): string {
   if (m.name?.toLowerCase().includes("apollo")) return medicalApollo;
   if (m.name?.toLowerCase().includes("king")) return medicalKings;
-  return m.imageUrl || plane;
+  return m.imageUrl || medicalTourism;
 }
 
 export default function MedicalCenterDetails() {
