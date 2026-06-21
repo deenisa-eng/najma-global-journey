@@ -6,7 +6,7 @@ import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn } from "@/lib/auth";
+import { signIn, isAdminEmail } from "@/lib/auth";
 import najmaLogo from "@/assets/najma.png";
 import heroKaaba from "@/assets/hero-kaaba.jpg";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,7 +19,7 @@ const signInSchema = z.object({
 export default function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, loading: authLoading, isAdmin } = useAuth();
+  const { user, loading: authLoading, isAdmin, signOut } = useAuth();
   const from = (location.state as { from?: string })?.from ?? "/admin";
 
   const [form, setForm] = useState({ email: "", password: "" });
@@ -31,10 +31,17 @@ export default function AdminLogin() {
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   useEffect(() => {
-    if (!authLoading && user) {
-      navigate(isAdmin ? "/admin" : "/portal", { replace: true });
+    if (authLoading || !user) return;
+
+    if (isAdmin) {
+      navigate(from, { replace: true });
+      return;
     }
-  }, [authLoading, user, isAdmin, navigate]);
+
+    void signOut().then(() => {
+      toast.error("Access denied. Use the customer portal to sign in.");
+    });
+  }, [authLoading, user, isAdmin, navigate, from, signOut]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,11 +55,18 @@ export default function AdminLogin() {
     setErrors({});
     setSubmitting(true);
 
-    const { error } = await signIn(form.email, form.password);
+    const { error, data } = await signIn(form.email, form.password);
 
     setSubmitting(false);
 
     if (error) { toast.error(error.message); return; }
+
+    const email = data.user?.email;
+    if (!isAdminEmail(email)) {
+      await signOut();
+      toast.error("Access denied. Use the customer portal to sign in.");
+      return;
+    }
 
     toast.success("Welcome back!");
     navigate(from, { replace: true });

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Trash2, Check, Clock, RefreshCw, LayoutDashboard, Calendar, MessageSquare, Settings as SettingsIcon, ChevronRight, Sparkles, Plus, X as XIcon, GraduationCap, HeartPulse } from "lucide-react";
+import { Trash2, Check, Clock, RefreshCw, LayoutDashboard, Calendar, MessageSquare, Settings as SettingsIcon, ChevronRight, Sparkles, Plus, X as XIcon, GraduationCap, HeartPulse, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { formatNGN } from "@/data/packages";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { getUmrahDepartures, upsertUmrahDeparture, deleteUmrahDeparture, getHajjPackage, upsertHajjPackage, getPackageTiers, upsertPackageTier, getTravelDepartures, upsertTravelDeparture, deleteTravelDeparture, getScholarships, upsertScholarship, deleteScholarship, getMedicalAffiliations, upsertMedicalAffiliation, deleteMedicalAffiliation, type PackageTier, type TierService, type Scholarship, type MedicalAffiliation } from "@/lib/schedules";
+import { BookingCard, BookingFilters, type BookingRecord } from "@/components/bookings/BookingCard";
 
 type Inquiry = {
   id: string;
@@ -25,26 +26,7 @@ type Inquiry = {
   created_at: string;
 };
 
-type AdminBooking = {
-  id: string;
-  created_at: string;
-  status: "pending" | "confirmed" | string;
-  amount: number;
-  service_type: string;
-  package_label: string | null;
-  contact_name: string;
-  contact_email: string;
-  contact_phone: string;
-  notes?: string | null;
-  metadata?: {
-    type?: string;
-    departure?: {
-      label: string;
-      depart: string;
-      ret: string;
-    };
-  } | null;
-};
+type AdminBooking = BookingRecord;
 
 export default function Admin() {
   const location = useLocation();
@@ -63,6 +45,7 @@ export default function Admin() {
   const [bookings, setBookings] = useState<AdminBooking[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [filter, setFilter] = useState<"all" | "pending" | "confirmed">("all");
+  const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [departures, setDepartures] = useState<any[]>([]);
   const [travelDepartures, setTravelDepartures] = useState<any[]>([]);
@@ -329,152 +312,34 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Bookings table */}
+      {/* Bookings */}
       <div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <h2 className="font-display text-2xl flex items-center gap-2">
-            Recent Bookings
-          </h2>
-          <div className="flex gap-2 p-1 bg-muted/30 rounded-lg border border-border/50">
-            {(["all", "pending", "confirmed"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={cn(
-                  "px-4 py-1.5 text-[10px] uppercase tracking-[0.2em] rounded-md transition-all",
-                  filter === f ? "bg-white text-gold shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <h2 className="font-display text-2xl">Recent Bookings</h2>
+          <BookingFilters value={filter} onChange={setFilter} pendingCount={totals.pending} />
         </div>
 
         {loading ? (
-          <div className="glass-card rounded-xl p-16 text-center">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-gold/50" />
-            <p className="text-muted-foreground">Syncing data...</p>
-          </div>
+          <div className="glass-card rounded-sm p-12 text-center text-muted-foreground">Loading…</div>
         ) : filtered.length === 0 ? (
-          <div className="glass-card rounded-xl p-16 text-center border-dashed">
-            <div className="font-display text-xl mb-1">No bookings found</div>
+          <div className="glass-card rounded-sm p-12 text-center">
+            <BookOpen className="w-10 h-10 text-muted-foreground mx-auto mb-4" />
+            <div className="font-display text-2xl mb-2">No bookings found</div>
             <p className="text-sm text-muted-foreground">Adjust your filters or wait for new orders.</p>
           </div>
         ) : (
-          <>
-            {/* Desktop */}
-            <div className="hidden lg:block glass-card rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border bg-muted/20">
-                    <th className="px-6 py-4">Reference</th>
-                    <th className="px-6 py-4">Service</th>
-                    <th className="px-6 py-4">Customer</th>
-                    <th className="px-6 py-4">Amount</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4">Date</th>
-                    <th className="px-6 py-4"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/40">
-                  {filtered.map((b) => (
-                    <tr key={b.id} className="hover:bg-white/[0.01] transition-colors">
-                      <td className="px-6 py-5 font-mono text-[10px] text-gold">{b.id.slice(0, 8).toUpperCase()}</td>
-                      <td className="px-6 py-5">
-                        <div className="font-medium capitalize">{b.service_type}</div>
-                        <div className="text-[10px] text-muted-foreground truncate max-w-[150px]">{b.package_label || "—"}</div>
-                        {b.metadata?.departure && (
-                          <div className="text-[9px] text-gold mt-1 font-bold">
-                            {b.metadata.departure.label} ({new Date(b.metadata.departure.depart).toLocaleDateString("en-NG")})
-                          </div>
-                        )}
-                        {b.notes && (
-                          <div className="text-[9px] text-muted-foreground mt-1 italic line-clamp-1 max-w-[150px]">
-                            "{b.notes}"
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="font-medium">{b.contact_name}</div>
-                        <div className="text-[10px] text-muted-foreground">{b.contact_email}</div>
-                      </td>
-                      <td className="px-6 py-5 font-medium">{formatNGN(b.amount ?? 0)}</td>
-                      <td className="px-6 py-5">
-                        <span className={cn(
-                          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] uppercase tracking-[0.15em] font-bold border",
-                          b.status === "confirmed" ? "border-emerald-500/30 text-emerald-500 bg-emerald-500/5" : "border-amber-500/30 text-amber-500 bg-amber-500/5"
-                        )}>
-                          {b.status === "confirmed" ? <Check className="w-2.5 h-2.5" /> : <Clock className="w-2.5 h-2.5" />}
-                          {b.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-[11px] text-muted-foreground">
-                        {new Date(b.created_at).toLocaleDateString("en-NG")}
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex gap-2 justify-end">
-                          {b.status === "pending" && (
-                            <Button size="sm" variant="outlineGold" className="h-8 text-[10px]" onClick={() => confirmBooking(b.id)}>
-                              Confirm
-                            </Button>
-                          )}
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => deleteBooking(b.id)}>
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile */}
-            <div className="lg:hidden grid gap-4">
-              {filtered.map((b) => (
-                <div key={b.id} className="glass-card rounded-xl p-5 border-l-4 border-l-gold">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <div className="font-mono text-[10px] text-gold">{b.id.slice(0, 8).toUpperCase()}</div>
-                      <div className="font-display text-lg mt-1">{b.contact_name}</div>
-                    </div>
-                    <span className={cn(
-                      "px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border",
-                      b.status === "confirmed" ? "border-emerald-500/30 text-emerald-500 bg-emerald-500/5" : "border-amber-500/30 text-amber-500 bg-amber-500/5"
-                    )}>{b.status}</span>
-                  </div>
-                  <div className="text-xs space-y-2 mb-4 text-muted-foreground">
-                    <div className="flex justify-between items-start gap-4">
-                      <span>Service:</span> 
-                      <div className="text-right">
-                        <div className="text-foreground capitalize">{b.service_type}</div>
-                        <div className="text-[10px]">{b.package_label}</div>
-                        {b.metadata?.departure && (
-                          <div className="text-[9px] text-gold font-bold mt-0.5">{b.metadata.departure.label}</div>
-                        )}
-                        {b.notes && (
-                          <div className="text-[9px] italic mt-0.5 max-w-[150px] truncate">"{b.notes}"</div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex justify-between"><span>Amount:</span> <span className="text-foreground font-medium">{formatNGN(b.amount ?? 0)}</span></div>
-                    <div className="flex justify-between"><span>Date:</span> <span className="text-foreground">{new Date(b.created_at).toLocaleDateString("en-NG")}</span></div>
-                  </div>
-                  <div className="flex gap-2 pt-3 border-t border-border/40">
-                    {b.status === "pending" && (
-                      <Button size="sm" variant="outlineGold" className="flex-1 h-9 text-[10px]" onClick={() => confirmBooking(b.id)}>
-                        Confirm
-                      </Button>
-                    )}
-                    <Button size="sm" variant="ghost" className="flex-1 h-9 text-[10px] text-destructive" onClick={() => deleteBooking(b.id)}>
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
+          <div className="space-y-3">
+            {filtered.map((b) => (
+              <BookingCard
+                key={b.id}
+                booking={b}
+                expanded={expandedBookingId === b.id}
+                onToggle={() => setExpandedBookingId(expandedBookingId === b.id ? null : b.id)}
+                onConfirm={() => confirmBooking(b.id)}
+                onDelete={() => deleteBooking(b.id)}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>

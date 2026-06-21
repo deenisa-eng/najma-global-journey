@@ -6,7 +6,7 @@ import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signIn, signUp } from "@/lib/auth";
+import { signIn, signUp, signOut, isAdminEmail } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
 import najmaLogo from "@/assets/najma.png";
@@ -49,10 +49,16 @@ export default function Auth() {
   };
 
   useEffect(() => {
-    if (!authLoading && user) {
-      navigate(isAdmin ? "/admin" : "/portal", { replace: true });
+    if (authLoading || !user) return;
+
+    if (isAdmin) {
+      toast.info("Please sign in through the admin portal.");
+      navigate("/admin/login", { replace: true });
+      return;
     }
-  }, [authLoading, user, isAdmin, navigate]);
+
+    navigate(from, { replace: true });
+  }, [authLoading, user, isAdmin, navigate, from]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +73,12 @@ export default function Auth() {
     setErrors({});
     setSubmitting(true);
 
+    if (isAdminEmail(form.email)) {
+      setSubmitting(false);
+      toast.error("Please sign in through the admin portal.");
+      return;
+    }
+
     const { error, data } = mode === "signin"
       ? await signIn(form.email, form.password)
       : await signUp(form.email, form.password, form.fullName);
@@ -74,6 +86,13 @@ export default function Auth() {
     setSubmitting(false);
 
     if (error) { toast.error(error.message); return; }
+
+    if (mode === "signin" && isAdminEmail(data.user?.email)) {
+      await signOut();
+      toast.error("Please sign in through the admin portal.");
+      navigate("/admin/login", { replace: true });
+      return;
+    }
 
     if (mode === "signup") {
       if (data?.user) {

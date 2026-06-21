@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, HeartPulse, ShieldPlus, Stethoscope, Building2, MapPin, RefreshCw, Globe } from "lucide-react";
+import { ArrowRight, Check, HeartPulse, ShieldPlus, Stethoscope, Building2, MapPin, RefreshCw } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SocialShare from "@/components/SocialShare";
 import { Button } from "@/components/ui/button";
@@ -55,33 +55,6 @@ export default function MedicalTourism() {
                 url="/medical-tourism"
               />
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20">
-        <div className="container-luxe">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-            <div>
-              <div className="eyebrow mb-3">What We Handle</div>
-              <h2 className="font-display text-4xl sm:text-5xl">A guided medical travel experience.</h2>
-            </div>
-            <p className="text-muted-foreground max-w-sm">Personalized support for individuals seeking specialist care in trusted international centers.</p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[
-              { icon: Stethoscope, title: "Specialist Access", desc: "Connect with verified consultants and hospitals for your case." },
-              { icon: HeartPulse, title: "Treatment Planning", desc: "Get clear treatment pathways, estimated timelines, and guidance." },
-              { icon: Building2, title: "Hospital Matching", desc: "Choose hospitals based on quality, budget, and location preferences." },
-              { icon: ShieldPlus, title: "End-to-End Support", desc: "Receive coordinated travel, logistics, and post-treatment follow-up." },
-            ].map((item) => (
-              <div key={item.title} className="glass-card rounded-sm p-7 hover:border-gold/50 transition-all duration-500 group">
-                <item.icon className="w-7 h-7 text-gold mb-4" />
-                <h3 className="font-display text-2xl mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -146,22 +119,41 @@ export default function MedicalTourism() {
                         ))}
                       </div>
                       
-                      {m.link ? (
-                        <Button asChild variant="outlineGold" size="sm" className="w-full">
-                          <a href={m.link} target="_blank" rel="noopener noreferrer">
-                            Visit Hospital <Globe className="w-3.5 h-3.5 ml-2" />
-                          </a>
-                        </Button>
-                      ) : (
-                        <Button asChild variant="outlineGold" size="sm" className="w-full">
-                          <Link to="/booking?type=medical">Enquire About Care</Link>
-                        </Button>
-                      )}
+                      <Button asChild variant="outlineGold" size="sm" className="w-full">
+                        <Link to={`/medical-centers/${m.id}`}>View Details <ArrowRight className="w-3.5 h-3.5 ml-2" /></Link>
+                      </Button>
                     </div>
                   </div>
                 </div>
               ))
             )}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20">
+        <div className="container-luxe">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+              <div className="eyebrow mb-3">What We Handle</div>
+              <h2 className="font-display text-4xl sm:text-5xl">A guided medical travel experience.</h2>
+            </div>
+            <p className="text-muted-foreground max-w-sm">Personalized support for individuals seeking specialist care in trusted international centers.</p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { icon: Stethoscope, title: "Specialist Access", desc: "Connect with verified consultants and hospitals for your case." },
+              { icon: HeartPulse, title: "Treatment Planning", desc: "Get clear treatment pathways, estimated timelines, and guidance." },
+              { icon: Building2, title: "Hospital Matching", desc: "Choose hospitals based on quality, budget, and location preferences." },
+              { icon: ShieldPlus, title: "End-to-End Support", desc: "Receive coordinated travel, logistics, and post-treatment follow-up." },
+            ].map((item) => (
+              <div key={item.title} className="glass-card rounded-sm p-7 hover:border-gold/50 transition-all duration-500 group">
+                <item.icon className="w-7 h-7 text-gold mb-4" />
+                <h3 className="font-display text-2xl mb-2">{item.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

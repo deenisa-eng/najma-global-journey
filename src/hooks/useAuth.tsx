@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
+import { isAdminEmail } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 interface AuthContextValue {
@@ -16,42 +17,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminLoading, setAdminLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
-    const fetchAdmin = async (userId: string | undefined) => {
-      if (!userId) {
-        setIsAdmin(false);
-        return;
-      }
-      setAdminLoading(true);
-      const { data } = await supabase.from("admin_profiles").select("id").eq("user_id", userId).maybeSingle();
+    const syncAdmin = (user: User | null | undefined) => {
       if (!mounted) return;
-      setIsAdmin(Boolean(data?.id));
-      setAdminLoading(false);
+      setIsAdmin(isAdminEmail(user?.email));
     };
 
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       setSession(data.session);
-      if (data.session?.user?.id) {
-        void fetchAdmin(data.session.user.id);
-      } else {
-        setIsAdmin(false);
-      }
+      syncAdmin(data.session?.user);
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       setSession(session);
-      if (session?.user?.id) {
-        void fetchAdmin(session.user.id);
-      } else {
-        setIsAdmin(false);
-      }
+      syncAdmin(session?.user);
     });
 
     return () => {
@@ -63,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => { await supabase.auth.signOut(); };
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading: loading || adminLoading, isAdmin, signOut }}>
+    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, isAdmin, signOut }}>
       {children}
     </AuthContext.Provider>
   );
