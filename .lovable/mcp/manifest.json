@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://chhtzqpyvheuklyrsmjj.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "najma-global-journey",
+      "version": "0.1.0",
+      "title": "Najma Global Journey"
+    },
+    "tools": [
+      {
+        "name": "list_packages",
+        "title": "List travel packages",
+        "description": "List Najma Global travel packages (Umrah, Hajj, study abroad, medical, visas) with price, duration and category.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "category": {
+              "type": "string",
+              "description": "Optional category filter, e.g. 'umrah' or 'hajj'."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Maximum packages to return (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_bookings",
+        "title": "List my bookings",
+        "description": "List the signed-in user's Najma Global bookings with status, travel date and service type.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_booking",
+        "title": "Create a booking",
+        "description": "Create a Najma Global booking request for the signed-in user. The booking starts in 'pending' status until the team confirms it.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "service_type": {
+              "type": "string",
+              "description": "Service: umrah, hajj, study-abroad, medical-tourism or travel-visas."
+            },
+            "package_label": {
+              "type": "string",
+              "description": "Package or tier name, if known."
+            },
+            "travel_date": {
+              "type": "string",
+              "description": "Preferred travel date as YYYY-MM-DD."
+            },
+            "travelers_count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Number of travellers (default 1)."
+            },
+            "contact_name": {
+              "type": "string",
+              "description": "Full name of the primary contact."
+            },
+            "contact_email": {
+              "type": "string",
+              "description": "Contact email address."
+            },
+            "contact_phone": {
+              "type": "string",
+              "description": "Contact phone number."
+            },
+            "notes": {
+              "type": "string",
+              "description": "Extra requests or context."
+            }
+          },
+          "required": [
+            "service_type",
+            "contact_name",
+            "contact_email",
+            "contact_phone"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "submit_inquiry",
+        "title": "Submit a contact inquiry",
+        "description": "Send a contact inquiry to the Najma Global team on behalf of the signed-in user.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of the person making the inquiry."
+            },
+            "email": {
+              "type": "string",
+              "description": "Reply-to email address."
+            },
+            "subject": {
+              "type": "string",
+              "description": "Short subject line."
+            },
+            "message": {
+              "type": "string",
+              "description": "The inquiry message."
+            }
+          },
+          "required": [
+            "name",
+            "email",
+            "message"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
