@@ -19,6 +19,7 @@ import Portal from "./pages/Portal.tsx";
 import Admin from "./pages/Admin.tsx";
 import AdminForgotPassword from "./pages/AdminForgotPassword.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import OAuthConsent from "./pages/OAuthConsent.tsx";
 
 import { AuthProvider } from "./hooks/useAuth";
 import Auth from "./pages/Auth.tsx";
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
